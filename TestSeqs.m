@@ -1,3 +1,4 @@
+%Processing IPTVData or MiniBlogRealData
 %load IPTVData.mat
 
 % Seqs1 = Seqs;
