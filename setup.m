@@ -13,6 +13,7 @@ addpath('Learning');
 addpath('Analysis');
 addpath('Visualization');
 addpath('MiniBlogData');
+addpath('non-stationary Hawkes');
 
 
 load('MiniBlogSeqsTwoAndHalfYears.mat');
