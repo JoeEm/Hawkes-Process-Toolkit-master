@@ -5,6 +5,13 @@
 
 %loading the data
 load MiniBlogSeqsTwoAndHalfYears.mat
+%preprecess
+NewSeqs = MiniBlogRealWorldCutting(MiniBlogSeqsTwoAndHalfYears);
+OutPutSeqs = RearrangeTheMiniBlogSeqs(NewSeqs, 4);
+
+%NewSeqs = NewSeqs(1:length(NewSeqs) - 1);
+Seqs1 = OutPutSeqs;
+
 Data = MiniBlogSeqsTwoAndHalfYears(1);
 
 alg1.LowRank = 0; % without low-rank regularizer
@@ -59,9 +66,24 @@ while(1)
             PrevLost = Loss;
         end
     end
-    %if the procedure does
-    
+    %if the procedure doesn't stop, combine the CluterData again for convenience. 
+    Totallength = 0;
+    for g = 1:ClusterNumbers
+       tmp = length(ClusteredData{g}.Time);
+       Totallength = tmp + Totallength;
+    end
+    Data = struct('Time', [], ...
+              'Mark', [], ...
+              'Start', [], ...
+              'Stop', [], ...
+              'Feature', []);
+        for i = 1:Totallength
+                Data.Time(i) = Data.Time(i);
+                Data.Mark(i) = Data.Mark(i);
+                Data.Feature(i) = Data.Feature(i);
+         end
 end
+
 
 %Visualization the Graph
 for i = 1:ClusterNumbers

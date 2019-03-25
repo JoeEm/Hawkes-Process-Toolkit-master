@@ -5,7 +5,10 @@
 
 %loading the data
 load MiniBlogSeqsTwoAndHalfYears.mat
-Data = MiniBlogSeqsTwoAndHalfYears(1);
+%preprecessing Data...
+NewSeqs = MiniBlogRealWorldCutting(MiniBlogSeqsTwoAndHalfYears);
+OutPutSeqs = RearrangeTheMiniBlogSeqs(NewSeqs, 4);
+Data = OutPutSeqs;
 
 alg1.LowRank = 0; % without low-rank regularizer
 alg1.Sparse = 1; % with sparse regul  arizer
@@ -33,7 +36,7 @@ ClusterNumbers = 2;
 threshold = 500;
 
 
-
+IterationNum = 1;
 
 while(1)
     %Clustering Data
@@ -74,7 +77,10 @@ while(1)
                 Data.Time(i) = Data.Time(i);
                 Data.Mark(i) = Data.Mark(i);
                 Data.Feature(i) = Data.Feature(i);
-         end
+        end
+        fprintf('abs(Loss - PrevLost) = %d, IterationNum =%d, \n',...
+                abs(Loss - PrevLost), IterationNum); 
+        IterationNum = IterationNum + 1; %counting
 end
 
 
