@@ -1,5 +1,5 @@
 %Processing the RealWorld Data, Let each Seqs represents a week long data.
-function NewSeqs = IPTV_RealData_Cutting(Seqs)
+function NewSeqs = IPTV_OriginalRealData_Cutting(Seqs)
 
 i = 1;
 j = 1;
@@ -64,8 +64,6 @@ if (Seqs(1).Time(length(Seqs(1).Time)) - ...
             if flag  == 0 
                 NewSeqs(Global_Seqs_NUM).Time = Seqs(Global_Count).Time(start:j);
                 NewSeqs(Global_Seqs_NUM).Mark = Seqs(Global_Count).Mark(start:j);
-                NewSeqs(Global_Seqs_NUM).Feature = Seqs(Global_Count).Feature(start:j);
-                NewSeqs(Global_Seqs_NUM).Number = Seqs(Global_Count).Number(start:j);
                 NewSeqs(Global_Seqs_NUM).Start = Seqs(Global_Count).Time(start);
                 NewSeqs(Global_Seqs_NUM).Stop = Seqs(Global_Count).Time(j);
 

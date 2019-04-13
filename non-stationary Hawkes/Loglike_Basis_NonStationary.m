@@ -29,6 +29,12 @@ Loglike = 0; % negative log-likelihood
 
 % E-step: evaluate the responsibility using the current parameters    
 for c = 1:length(Seqs)
+    %added part comparing to the original version
+    index = find(Seqs(c).Mark == 0);
+    for countnum = 1:length(index)
+        Seqs(c).Mark(index(countnum)) = 1;
+    end
+    
     Time = Seqs(c).Time;
     Event = Seqs(c).Mark;
     Tstart = Seqs(c).Start;
@@ -44,12 +50,12 @@ for c = 1:length(Seqs)
     
     
     %modified section
-    Tstart = start;
-    Tstop = stop;
+    %Tstart = start;
+    %Tstop = stop;
     
     
     %Amu = Amu + Tstop - Tstart;
-
+    %dbstop in Loglike_Basis_NonStationary at 52
     dT = Tstop - Time;
     GK = Kernel_Integration(dT, model);
 
@@ -82,10 +88,10 @@ for c = 1:length(Seqs)
         Loglike = Loglike - log(lambdai);
 
     end
-
+    %dbstop in Loglike_Basis_NonStationary at 85
     Loglike = Loglike + (Tstop-Tstart).*sum(muest);
     Loglike = Loglike + sum( sum( GK.*sum(Aest(Event,:,:),3) ) );
-
+    
 
 
 end

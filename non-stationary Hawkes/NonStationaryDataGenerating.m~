@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% function :NonStationaryDataGenerating(void)
+% 1.Generating nonStationary Data...(Two patterns).
+% 2.Displaying the two different patterns respectively.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function Seqs=NonStationaryDataGenerating(alg1)
+
+
+options.N = 2000; % the number of sequences
+options.Nmax = 500; % the maximum number of events per sequence
+options.Tmax = 200; % the maximum size of time window
+options.tstep = 0.1;
+options.dt = 0.1; % the length of each time step
+options.M = 250; % the number of steps in the time interval for computing sup-intensity
+options.GenerationNum = 100; % the number of generations for branch processing
+D = 7; % the dimension of Hawkes processes
+
+
+disp('Approximate simulation of Hawkes processes via branching process')
+disp('Complicated gaussian kernel')
+para1.kernel = 'gauss'; % the type of kernels per impact function
+para1.w = 2; % the bandwidth of gaussian kernel
+para1.landmark = 0:4:12; % the central locations of kernels
+L = length(para1.landmark);
+
+% initialize ground truth parameters
+para1.mu = rand(D,1)/D;
+para1.A = zeros(D, D, L);
+for l = 1:L
+    para1.A(:,:,l) = (0.5^l)*(0.5+ones(D));
+end
+mask = rand(D).*double(rand(D)>0.7);
+para1.A = para1.A.*repmat(mask, [1,1,L]);
+para1.A = 0.25*para1.A./max(abs(eig(sum(para1.A,3)))); % ensure the stationarity of Hawkes process
+tmp = para1.A;
+para1.A = reshape(para1.A, [D, L, D]);
+for di = 1:D
+    for dj = 1:D
+        phi = tmp(di, dj, :);
+        para1.A(dj, :, di) = phi(:);
+    end
+end
+
+
+
+% two simulation methods
+Seqs1 = Simulation_Branch_HP(para1, options);
+model1 = Initialization_Basis(Seqs1); 
+% learning the model of Seqs1 by MLE-SGL
+alg1.Sparse=1;
+alg1.GroupSparse=1; 
+model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
+A1 = ImpactFunc(model_MLE_SGL, options);
+
+%Seqs1 = Simulation_Thinning_HP(para1, options);
+
+for di = 1:D
+    for dj = 1:D
+        if (di == 1|| di == 7  || dj ==1 || dj ==7)
+            para1.A(dj, :, di) = 0;
+        end
+    end
+end
+
+Seqs2 = Simulation_Branch_HP(para1, options);
+model1 = Initialization_Basis(Seqs1); 
+% learning the model of Seqs1 by MLE-SGL
+alg1.Sparse=1;
+alg1.GroupSparse=1; 
+model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
+A1 = ImpactFunc(model_MLE_SGL, options);
+
+
+Seqs = [Seqs1,Seq2]; %combining the two different patterns into one  
+
+
+
+end

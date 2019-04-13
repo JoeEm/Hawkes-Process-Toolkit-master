@@ -1,4 +1,4 @@
-function model = Learning_MLE_S_Basis( Seqs, model, alg )
+function model = Learning_MLE_S_nonstationary( Seqs, model, alg )
 %for MLE-S and MLE-SGL
 
 
@@ -7,7 +7,6 @@ Aest = model.A;
 muest = model.mu;
 
 %GK = struct('intG', []);
-
 
 if alg.LowRank
     UL = zeros(size(Aest));
@@ -64,6 +63,12 @@ for o = 1:alg.outer
         
         % E-step: evaluate the responsibility using the current parameters    
         for c = 1:length(Seqs)
+            %added part comparing to the original version
+            index = find(Seqs(c).Mark == 0);
+            for countnum = 1:length(index)
+                Seqs(c).Mark(index(countnum)) = 1;
+            end
+
             if ~isempty(Seqs(c).Time)
                 Time = Seqs(c).Time;
                 Event = Seqs(c).Mark;
@@ -94,7 +99,8 @@ for o = 1:alg.outer
                 for i = 1:Nc
                     
                     ui = Event(i);
-
+                       
+                    
                     BmatA(ui,:,:) = BmatA(ui,:,:)+...
                         double(Aest(ui,:,:)>0).*repmat( GK(i,:), [1,1,D] );
 

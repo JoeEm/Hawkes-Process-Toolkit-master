@@ -1,4 +1,4 @@
-function model = Initialization_Basis(Seqs, baseType, bandwidth, landmark)
+function model = Initialization_nonstationary(Seqs, baseType, bandwidth, landmark)
 
 D = zeros(length(Seqs),1);
 for i = 1:length(Seqs)      
@@ -27,8 +27,10 @@ switch nargin
         
         for di = 1:D
             for dj = 1:D
-                sigma(di, dj) = ((4*std(est{di, dj})^5)/(3*length(est{di, dj})))^0.2; 
-                Tmax(di, dj) = mean(est{di, dj});
+                if(~isempty(est{di,dj}))%modified part comparing to Intialization_basis
+                    sigma(di, dj) = ((4*std(est{di, dj})^5)/(3*length(est{di, dj})))^0.2; 
+                    Tmax(di, dj) = mean(est{di, dj});
+                end
             end
         end
         Tmax = min(Tmax(:))/2;
@@ -37,7 +39,7 @@ switch nargin
         model.kernel = 'gauss';
         model.w = min(sigma(:))/2;
         %model.w = 0.2;  %it's wrong to enforce value on w and landmark.
-        %model.landmark = model.w*(0:ceil(Tmax/model.w));
+        model.landmark = model.w*(0:ceil(Tmax/model.w));
         %model.landmark = 0:20:100;
         
     case 2
@@ -92,8 +94,10 @@ switch nargin
         
         for di = 1:D
             for dj = 1:D
-                sigma(di, dj) = ((4*std(est{di, dj})^5)/(3*length(est{di, dj})))^0.2; 
-                Tmax(di, dj) = mean(est{di, dj});
+                if ()
+                    sigma(di, dj) = ((4*std(est{di, dj})^5)/(3*length(est{di, dj})))^0.2; 
+                    Tmax(di, dj) = mean(est{di, dj});
+                end
             end
         end
         Tmax = min(Tmax(:))/2;

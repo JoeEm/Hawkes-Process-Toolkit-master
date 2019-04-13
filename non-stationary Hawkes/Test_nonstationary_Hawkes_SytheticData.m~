@@ -1,22 +1,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This file for testing the non-stationary Hawkes processes 
+% This file for testing the non-stationary Hawkes processes (Sythetic Data)
 % last modified data: 3/22/2019
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear %clear workplace
-%loading the data
-%load MiniBlogSeqsTwoAndHalfYears.mat
-
-%preprecessing Data...(IPTVData...)
-load IPTVData.mat %Seqs' length is 302 ,each 11 months long
-%Seqs1 = Seqs(1:300);
-Seqs1 = Seqs(1:30);
-%NewSeqs = MiniBlogRealWorldCutting(MiniBlogSeqsTwoAndHalfYears);
-NewSeqs2 = IPTV_OriginalRealData_Cutting(Seqs1);
-NewSeqs1 = RearrangeTheMiniBlogSeqs(NewSeqs2);
-NewSeqs = NewSeqs2(1:50);%extracting a years(50weeks aprox. to a year) data
-NewSeqs = CombineTheOriginalData(NewSeqs,length(NewSeqs));
-Data = NumberTheSeqs(NewSeqs); %add number label to each data
-
 
 alg1.LowRank = 0; % without low-rank regularizer
 alg1.Sparse = 1; % with sparse regularizer
@@ -33,22 +19,17 @@ alg1.storeLL = 0;
 alg1.As = 10; %for Local Independence R.
 alg1.Ap = 1000;%for Pairwise similarity R.
 
-sample = 0;
- for k = 1:length(Data)
-    sample = sample + length(Data(k).Time);
- end
-sample = sample/length(Data);
-alg1.N = sample;%number of sample
-
 para = alg1;
 
+%generating SytheticData(containing Two pattarns)
+Data1 = NonStationaryDataGenerating(para);
+Data = NumberTheSeqs(Data1);%add number label for each Seqs
 
 %hyperparameter
 Beta = 50;
 Alpha = 400;
 ClusterNumbers = 2;
 threshold = 500;
-Timeinterval = 1;
 
 IterationNum = 1;
 FirstTimeLossFlag = 1;

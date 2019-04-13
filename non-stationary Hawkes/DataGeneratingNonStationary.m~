@@ -1,22 +1,19 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
-% Learning Granger causality for Hawkes processes by MLE based method
-%
+% function :NonStationaryDataGenerating(void)
+% 1.Generating nonStationary Data...(Two patterns).
+% 2.Displaying the two different patterns respectively.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-clear
+function Seqs=DataGeneratingNonStationary(alg1)
 
 
 options.N = 2000; % the number of sequences
-options.Nmax = 500; % the maximum number of events per sequence
-options.Tmax = 200; % the maximum size of time window
+options.Nmax = 400; % the maximum number of events per sequence
+options.Tmax = 400; % the maximum size of time window
 options.tstep = 0.1;
 options.dt = 0.1; % the length of each time step
 options.M = 250; % the number of steps in the time interval for computing sup-intensity
 options.GenerationNum = 100; % the number of generations for branch processing
 D = 8; % the dimension of Hawkes processes
-
 
 
 disp('Approximate simulation of Hawkes processes via branching process')
@@ -44,14 +41,31 @@ for di = 1:D
     end
 end
 
-% for di = 1:D
-%     for dj = 1:D
-%         if (di == 1|| di == 2 || di == 3  || dj ==1 || dj==2 || dj ==3 )
-%             para1.A(dj, :, di) = 0;
-%         end
-%     end
-% end
 
+
+
+% two simulation methods
+Seqs1 = Simulation_Branch_HP(para1, options);
+model1 = Initialization_Basis(Seqs1); 
+% learning the model of Seqs1 by MLE-SGL
+
+figure
+A1_T=ImpactFunc(para1, options);
+subplot(221);
+imagesc(A1_T);
+title('Ground truth of infectivity_A1')
+
+model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1);
+A1 = ImpactFunc(model_MLE_SGL, options);
+
+
+subplot(222);
+imagesc(A1);
+title('Estimation of infectivity_A1')
+%Seqs1 = Simulation_Thinning_HP(para1, options);
+
+
+%generating pattern two
 for di = 1:D
     for dj = 1:D
         if (...
@@ -69,66 +83,44 @@ for di = 1:D
     end
 end
 
-% two simulation methods
-Seqs1 = Simulation_Branch_HP(para1, options);
-%Seqs1 = Simulation_Thinning_HP(para1, options);
+para1.w = 0.2; % the bandwidth of gaussian kernel
+para1.landmark = 0:20:60; % the central locations of kernels
 
 
-%%
-% Visualize all impact functions and infectivity matrix
-A = ImpactFunc( para1, options );
+options.N = 2000; % the number of sequences
+options.Nmax = 500; % the maximum number of events per sequence
+options.Tmax =200; % the maximum size of time window
+options.tstep = 0.1;
+options.dt = 0.1; % the length of each time step
+options.M = 250; % the number of steps in the time interval for computing sup-intensity
+options.GenerationNum = 100; % the number of generations for branch processing
+D = 8; % the dimension of Hawkes processes
 
 
+Seqs2 = Simulation_Branch_HP(para1, options);
+model2 = Initialization_Basis(Seqs1); 
 
-disp('Maximum likelihood estimation and basis representation') 
+A2_T=ImpactFunc(para1, options);
+subplot(223);
+imagesc(A2_T);
+title('Ground truth of infectivity_A2')
 
-alg1.LowRank = 0; % without low-rank regularizer
-alg1.Sparse = 1; % with sparse regularizer
-alg1.alphaS = 10; %MLE-S
-alg1.GroupSparse = 1; % with group-sparse regularizer
-alg1.alphaGS = 100; %MLE-SGL
-alg1.outer = 5;%5
-alg1.rho = 0.1; % the initial parameter for ADMM
-alg1.inner = 8;%8
-alg1.thres = 1e-5;
-alg1.Tmax = [];
-alg1.storeErr = 0;
-alg1.storeLL = 0;
-alg1.As = 10; %for Local Independence R.
-alg1.Ap = 1000;%for Pairwise similarity R.
-
-
-model1 = Initialization_Basis(Seqs1); 
-
-%model1 = Initialization_Basis(Seqs1);
-% model1.kernel = 'gauss';
-% model1.w = pi*options.Nmax/(options.Tmax);  %According to the Real-Data Experiment
-% model1.landmark = (model1.w)*(0:ceil(options.Tmax/model1.w));
-% model1.A = rand(D, length(model1.landmark), D);
-% model1.mu = rand(D, 1)./D;
-
-
-% % learning the model by MLE
-model1 = Learning_MLE_Basis( Seqs1, model1, alg1 ); 
-A1 = ImpactFunc( model1, options );
-
-% learning the model by MLE-SGL
+% learning the model of Seqs1 by MLE-SGL
 alg1.Sparse=1;
 alg1.GroupSparse=1; 
-model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
+model_MLE_SGL = Learning_MLE_S_Basis( Seqs2, model2, alg1 );
+A2 = ImpactFunc(model_MLE_SGL, options);
 
-A1 = ImpactFunc(model_MLE_SGL, options);
-
-
+subplot(224);
+imagesc(A2);
+title('Estimation of infectivity_A2')
 % Visualize the infectivity matrix (the adjacent matrix of Granger causality graph)
-figure
-subplot(121)        
-imagesc(A)
-title('Ground truth of infectivity') 
-axis square
-colorbar
-subplot(122)        
-imagesc(A1)
-title('Estimated infectivity-MLE')
-colorbar
-axis square
+
+      
+
+
+Seqs = [Seqs1,Seqs2]; %combining the two different patterns into one  
+
+
+
+end

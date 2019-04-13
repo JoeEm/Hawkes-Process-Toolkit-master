@@ -8,7 +8,7 @@
 clear
 
 
-options.N = 2000; % the number of sequences
+options.N = 20; % the number of sequences
 options.Nmax = 500; % the maximum number of events per sequence
 options.Tmax = 200; % the maximum size of time window
 options.tstep = 0.1;
@@ -55,10 +55,10 @@ end
 for di = 1:D
     for dj = 1:D
         if (...
-            (di == 1 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||... 
-            (di == 2 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
-            (di == 3 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
-            (di == 4 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
+%             (di == 1 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||... 
+%             (di == 2 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
+%             (di == 3 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
+%             (di == 4 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
             (di == 5 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
             (di == 6 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
             (di == 7 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
@@ -115,9 +115,9 @@ A1 = ImpactFunc( model1, options );
 % learning the model by MLE-SGL
 alg1.Sparse=1;
 alg1.GroupSparse=1; 
-model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
+%model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
 
-A1 = ImpactFunc(model_MLE_SGL, options);
+%A1 = ImpactFunc(model_MLE_SGL, options);
 
 
 % Visualize the infectivity matrix (the adjacent matrix of Granger causality graph)
@@ -128,7 +128,7 @@ title('Ground truth of infectivity')
 axis square
 colorbar
 subplot(122)        
-imagesc(A1)
+%imagesc(A1)
 title('Estimated infectivity-MLE')
 colorbar
 axis square

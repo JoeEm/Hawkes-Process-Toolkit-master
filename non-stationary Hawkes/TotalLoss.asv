@@ -11,14 +11,12 @@ Loss = 0;
 Norm2 = 0;
 Tconsistency = 0;
 for i = 1:ClusterNumbers
-    for q = 1:length(ClusteredData{i})
-       b(q) = ClusteredData{i}(q).Number;
-    end
+    
     %sorted the
-    [array,index] = sort(b); 
+    [array,index] = sort(ClusteredData{i}.Number); 
     %Norm2 = Norm2 + Alpha*var(ClusteredData{i}.Time(:));
     
-    Clusterlength = length(b);
+    Clusterlength = length(ClusteredData{i}.Time);
     %[array,index] = sort([2 3 1])  index = [3 1 2] array =[1 2 3]
     %ClusterData should've been already sorted from the dimension of 'Time'.
     for j = 1:Clusterlength - 1

@@ -1,5 +1,5 @@
 %Processing the RealWorld Data, Let each Seqs represents a week long data.
-function NewSeqs = IPTV_RealData_Cutting(Seqs)
+function NewSeqs = MiniBlogRealWorldCutting(Seqs)
 
 i = 1;
 j = 1;
@@ -49,12 +49,12 @@ while (Global_Count <= MaxSeqsLength)
                             HistoryEnd_i <= length(Seqs(Global_Count).Time))
         j = HistoryEnd_i;
         start = HistoryEnd_i;
-        
-        while ( (Seqs(Global_Count).Time(j) - Seqs(Global_Count).Time(start))  <= 7)
+        %e.g. 7 stands for a week.
+        while ( (Seqs(Global_Count).Time(j) - Seqs(Global_Count).Time(start))  <= 6*4*7)
            j = j + 1; 
            if (length(Seqs(Global_Count).Time) < j )
                fprintf(' Out of Loop\n');
-              flag  =  1;
+              flag  =  1; 
               break;
            end
         end

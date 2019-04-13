@@ -3,16 +3,13 @@
 % then Assgins the points to corresponding cluster via Algorithnm 1,
 % and finally return the ClusteredData
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Outputmodel,ClusteredData] = AssginPtsToCluster(Data, ClusterNumbers, para, Beta, IterationNum, model)
+function ClusteredData = AssginPtsToCluster(Data, ClusterNumbers, para, Beta, IterationNum, model)
 %Initialization
 PrevCost = rand(ClusterNumbers,1); 
 CurrCost = zeros(ClusterNumbers,1);
 PrevPath = cell(ClusterNumbers,1);
 CurrPath = cell(ClusterNumbers,1);
 
-
-
-Datalength = length(Data); 
 
 
 if (IterationNum == 1) 
@@ -38,15 +35,9 @@ end
 %dbstop in AssginPtsToCluster at 46
 
 ClusterData = cell(ClusterNumbers,1);
-
-if (IterationNum == 1)
-    for counter = 1:Datalength
-        ClusterData{Data(counter).Feature} = [ClusterData{Data(counter).Feature},Data(counter)] ;
-    end
-else
-    ClusterData = Data;
+for counter = 1:Datalength
+    ClusterData{Data(counter).Feature} = [ClusterData{Data(counter).Feature},Data(counter)] ;
 end
-
 
 InnerFirstTimeFlag = 1;          
 for i = 1:Datalength
@@ -65,40 +56,32 @@ for i = 1:Datalength
         
         Loglike = Loglike_Basis_NonStationary(Data(i), model(j), para);
 
-        CurrCost(j) = Loglike;
-        if (PrevSelection ~= j)
-            CurrCost(j) = CurrCost(j) - Beta;
-        end
-%         %to be modeified
-%         if (PrevCost(MinIndex) + Beta > PrevCost(j))
-%             CurrCost(j) = PrevCost(j) - Loglike;
-%             CurrPath{j} = [PrevPath{j},j];
-%             %Path(i) = j;
-%             %PrevSelection = j; %to be modified.
-%         else
-%             CurrCost(j) = PrevCost(MinIndex) - Loglike + Beta;
-%             CurrPath{j} = [PrevPath{MinIndex},j];
-%             %Path(i) = MinIndex;
-%         end    
+        %to be modeified
+        if (PrevCost(MinIndex) + Beta > PrevCost(j))
+            CurrCost(j) = PrevCost(j) - Loglike;
+            CurrPath{j} = [PrevPath{j},j];
+            %Path(i) = j;
+            %PrevSelection = j; %to be modified.
+        else
+            CurrCost(j) = PrevCost(MinIndex) - Loglike + Beta;
+            CurrPath{j} = [PrevPath{MinIndex},j];
+            %Path(i) = MinIndex;
+        end    
     end
-    tempIndex = find(CurrCost == max(CurrCost));
-    Path(i) = tempIndex;
-        
-%     PrevCost = CurrCost;
-%     PrevPath = CurrPath;
+    PrevCost = CurrCost;
+    PrevPath = CurrPath;
 end
 
-%FinalMinIndex = find(CurrCost == min(CurrCost));
-%Path = CurrPath{FinalMinIndex};
+FinalMinIndex = find(CurrrCost == min(CurrCost));
+Path = CurrPath{FinalMinIndex};
 
 
 ClusterDataFinal = cell(ClusterNumbers,1);
 for counter = 1:Datalength
-    Data(counter).Feature = Path(counter);
-    ClusterDataFinal{Path(counter)} = [ClusterDataFinal{Path(counter)},Data(counter)] ;
+    ClusterDataFinal{Path(i)} = [ClusterDataFinal{Path(i)},Data(counter)] ;
 end
 
 ClusteredData = ClusterDataFinal;  
-Outputmodel = model;
+
 end
 
