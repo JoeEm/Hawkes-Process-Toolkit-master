@@ -1,4 +1,4 @@
-function g = Kernel(dt, para)
+function g = MCKernel(dt, para)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -6,10 +6,7 @@ function g = Kernel(dt, para)
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % dt = t_current - t_hist(:);
-
-    distance = repmat(dt(:), [1, length(para.landmark(:))]) - ...
-               repmat(para.landmark(:)', [length(dt), 1]);
-
+distance = dt;
 
 switch para.kernel
     case 'exp'
