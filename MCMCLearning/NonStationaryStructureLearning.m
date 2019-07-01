@@ -10,7 +10,7 @@
 clc
 clear; 
 
-startpoint = 50;
+startpoint = 1;
 
 %Intialization of parameter
 %for parameters 'alpha' from f() alpha -> exp(k(i))
@@ -38,11 +38,16 @@ f = @(EventCounter,TimelengthofSeqs,alpha) alpha*EventCounter/TimelengthofSeqs;
 g = @(lamda_ij, phai) 1/(1+exp(-(lamda_ij+phai))); 
 
 %preparing simulation data
-[Seqs,alg] = GeneratingSimulationData();
+%[Seqs,alg] = GeneratingSimulationData();
+load NonSatationaryTestSeqs.mat
+[NewSeqs1, NewSeqs2]  = BreakSeqs(Seqs1);
+%Seqs = Seqs1;
+Seqs = Seqs1;
+alg = options;
 
 %Initializing the a_ij(t;parameters)
 D = 8;
-Tmax = 400;
+Tmax = options.Tmax/2;  %verified section
 A = rand(D,D,startpoint);
 
 %for parameters mu as a exogenous base intensity   mu -> normrnd(mu(i),sig)
@@ -53,10 +58,10 @@ sig_mu = 0.01;
 counter = 1;
 GlobalFirstTimeFlag = 0;
 
-for t = startpoint:Tmax
+for t = startpoint:Tmax/10  %add the interval
     GlobalFirstTimeFlag = 1;
     for seqNum = 1:size(Seqs,2)
-        index = find( (Seqs(seqNum).Time<t));
+        index = find( (Seqs(seqNum).Time<t*Tmax/10) );
         if (length(index) < 1)
             continue;
         end
@@ -93,18 +98,20 @@ for t = startpoint:Tmax
                     %calculating previous-likelihood
                     %function g(lamda_ij(t); phai) signoid function
                     lamda_Value(child_node,parent_node) = lamda_ij(NewSeqs,Pre_model,child_node,parent_node,t,alg);
-                    tmp = tmp + lamda_Value(child_node,parent_node) ;
+                    tmp = tmp + lamda_Value(child_node,parent_node);
                     %Func_g(child_node,parent_node) = g(lamda_Value(child_node,parent_node),phai(i)); 
                 end          
             end
             
             for child_node = 1:D
                 for  parent_node = 1:D
-                    %if (lamda_Value(child_node,parent_node)/tmp>0.5)
-                        New_A(child_node,parent_node,t) = lamda_Value(child_node,parent_node)/tmp;  %verified section
-                    %else
-                    %    New_A(child_node,parent_node,t) = 0;   %
-                    %end
+                    if (rand < lamda_Value(child_node,parent_node)/sum(lamda_Value(child_node,:)))
+                        %New_A(child_node,parent_node,t) = lamda_Value(child_node,parent_node)/tmp;  %verified section
+                        %New_A(child_node,parent_node,t) = lamda_Value(child_node,parent_node);
+                        New_A(child_node,parent_node,t) = 1;
+                    else
+                        New_A(child_node,parent_node,t) = 0;   %
+                    end
                 end          
             end
             

@@ -1,4 +1,4 @@
-function [FHSeqs1, FHSeqs2]  = BreakSeqs(InputSeqs, lengthofSeqs)
+function New_Seqs  = BreakSeqs(InputSeqs,options)
 
 FirstTimeFlag = 1;
 
@@ -10,6 +10,9 @@ for k = 1:size(InputSeqs,2)
                           'Start',   [], ...
                           'Stop',    [], ...
                           'Feature', []);
+    
+    lengthofSeqs = sum(InputSeqs(k).Time <= options.Tmax/2);
+    
     for i = 1:lengthofSeqs
         NewSeqs1.Time(i) = InputSeqs(k).Time(i);
         NewSeqs1.Mark(i) = InputSeqs(k).Mark(i);
@@ -25,7 +28,7 @@ for k = 1:size(InputSeqs,2)
                           'Stop',    [], ...
                           'Feature', []);
                       counter = 1;
-    for j = lengthofSeqs:length(InputSeqs(k).Time)
+    for j = lengthofSeqs+1:length(InputSeqs(k).Time)
         NewSeqs2.Time(counter) = InputSeqs(k).Time(j);
         NewSeqs2.Mark(counter) = InputSeqs(k).Mark(j);
         counter = counter + 1 ;
@@ -46,16 +49,16 @@ for k = 1:size(InputSeqs,2)
                       'Stop',    [], ...
                       'Feature', []);
         for a = 1:length(NewSeqs1.Time)
-            FHSeqs1.Time(a) = InputSeqs(k).Time(a);
-            FHSeqs1.Mark(a) = InputSeqs(k).Mark(a);
+            FHSeqs1.Time(a) = NewSeqs1.Time(a);
+            FHSeqs1.Mark(a) = NewSeqs1.Mark(a);
         end
         
             FHSeqs1.Start = min(FHSeqs1.Time);
-            FHSeqs1.Stop =  max-(FHSeqs1.Time);
+            FHSeqs1.Stop =  max(FHSeqs1.Time);
         
         for b = 1:length(NewSeqs2.Time)
-            FHSeqs2.Time(b) = InputSeqs(k).Time(b);
-            FHSeqs2.Mark(b) = InputSeqs(k).Mark(b);
+            FHSeqs2.Time(b) = NewSeqs2.Time(b);
+            FHSeqs2.Mark(b) = NewSeqs2.Mark(b);
         end
             FHSeqs2.Start = min(FHSeqs2.Time);
             FHSeqs2.Stop =  max(FHSeqs2.Time);        
@@ -65,8 +68,8 @@ for k = 1:size(InputSeqs,2)
         FHSeqs2 = [FHSeqs2,NewSeqs2];
     end 
 
-
-  
+New_Seqs(1) = ;
+New_Seqs(2) =  ; 
     
 
 end

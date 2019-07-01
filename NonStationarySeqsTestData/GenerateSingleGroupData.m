@@ -1,12 +1,10 @@
 %In the another half of the Seqs, it generates data
 %corresponding to a different structure pattern.
 
-function [Seqs1,options] = GeneratingSimulationData(options,D)
+function [Seqs1,para] = GenerateSingleGroupData(options,D,Group)
+
 
 %for Tmax 1 = 1honr, 1 week = 24*7 = 168, 
-switchFlag = 1;
-
-
 
 disp('Approximate simulation of Hawkes processes via branching process')
 disp('Complicated gaussian kernel')
@@ -33,52 +31,7 @@ for di = 1:D
     end
 end
 
-para_first_half = para;
 
-
-para.w = 2; % 2
-para.landmark = 0:1:12; % the central locations of kernels
-L = length(para.landmark);
-para.mu = rand(D,1)/D;
-para.A = zeros(D, D, L);
-for l = 1:L
-    para.A(:,:,l) = (0.5^l)*(0.5+ones(D)); %(0.5^l)*(0.5+ones(D));
-end
-mask = rand(D).*double(rand(D)>0.9); %rand(D).*double(rand(D)>0.7);
-para.A = para.A.*repmat(mask, [1,1,L]);
-para.A = 0.25*para.A./max(abs(eig(sum(para.A,3)))); % ensure the stationarity of Hawkes process
-tmp = para.A;
-para.A = reshape(para.A, [D, L, D]);
-for di = 1:D
-    for dj = 1:D
-        phi = tmp(di, dj, :);
-        para.A(dj, :, di) = phi(:);
-    end
-end
-
-para.A =para.A*10;
-para_second_half = para;
-
-
-
-
-% Visualize all impact functions and infectivity matrix
-A = ImpactFunc( para_first_half, options );
-A1 = ImpactFunc( para_second_half, options );
-
-
-figure
-subplot(121)        
-imagesc(A)
-title('Ground truth of infectivity G1')
-axis square
-colorbar
-
-subplot(122)        
-imagesc(A1)
-title('Ground truth of infectivity G2') 
-axis square
-colorbar
 
 
 %Generating Simulation Data
@@ -89,29 +42,35 @@ Seqs = struct('Time', [], ...
               'Feature', []);
 tic
 
-para = para_first_half;
+
 
 
 for n = 1:options.N
-    
     % the 0-th generation, simulate exogeneous events via Poisson processes
     History = Simulation_Thinning_Poisson(para.mu, 0, options.Tmax);
-    current_set = History;
+    %do some alteration on the Data structure(from 2d to 3d)
+    New_History = zeros(3,length(size(History,2)));
+    for q = 1:size(History,2) %two pattern situation...
+        New_History(1,q) = History(1,q);
+        New_History(2,q) = History(2,q);
+        
+        New_History(3,q) = Group;            
+    end
+    current_set = New_History;
     
     for k = 1:options.GenerationNum
         future_set = [];
         for i = 1:size(current_set, 2)
             ti = current_set(1,i);
+
             ui = current_set(2,i);
             t = 0;
+            
             
             phi_t = ImpactFunction(ui, t, para);
             mt = sum(phi_t);
             
-            while t<options.Tmax-ti
-                %In the another half of the Seqs, it generates data
-                %corresponding to a different structure pattern.     
-                
+            while t<options.Tmax-ti                              
                 s = random('exp', 1/mt);
                 U = rand;
 
@@ -133,7 +92,8 @@ for n = 1:options.N
                     index = d;
 
                     t = t+s;
-                    future_set=[future_set,[t+ti;index(1)]];
+                    %future_set=[future_set,[t+ti;index(1)]];
+                    future_set=[future_set,[t+ti;index(1);Group]];
                 end
         
                 phi_t = ImpactFunction(ui, t, para);
@@ -141,17 +101,20 @@ for n = 1:options.N
             end            
         end
         
-        if isempty(future_set) || size(History, 2)>options.Nmax
+        if isempty(future_set) || size(New_History, 2)>options.Nmax
             break
         else
             current_set = future_set;
-            History = [History, current_set];            
+            New_History = [New_History, current_set];
         end
     end
     
-    [~, index] = sort(History(1,:), 'ascend');
-    Seqs(n).Time = History(1,index);
-    Seqs(n).Mark = History(2,index);
+    [~, index] = sort(New_History(1,:), 'ascend');
+    Seqs(n).Time = New_History(1,index);
+    Seqs(n).Mark = New_History(2,index);
+    
+    Seqs(n).Group = New_History(3,index);
+    
     Seqs(n).Start = 0;
     Seqs(n).Stop = options.Tmax;
     index = find(Seqs(n).Time<=options.Tmax);
@@ -163,8 +126,6 @@ for n = 1:options.N
             n, options.N, length(Seqs(n).Mark), toc);
     end
 end
-
-
 
 Seqs1 = Seqs;
 

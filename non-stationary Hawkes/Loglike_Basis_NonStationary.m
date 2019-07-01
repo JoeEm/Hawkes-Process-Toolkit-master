@@ -19,7 +19,6 @@ muest = model.mu;
 
 %D = size(Aest, 1);
 
-
 tic;
 
         

@@ -1,11 +1,12 @@
 function model = Initialization_Basis(Seqs, baseType, bandwidth, landmark)
 
-D = zeros(length(Seqs),1);
-for i = 1:length(Seqs)      
-    D(i) = max(Seqs(i).Mark);
-end
-D = max(D);
+%D = zeros(length(Seqs),1);
+%for i = 1:length(Seqs)      
+%    D(i) = max(Seqs(i).Mark);
+%end
 
+%D = max(D);
+D = 8;
 switch nargin
     case 1
         sigma = zeros(D);

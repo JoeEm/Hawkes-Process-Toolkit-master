@@ -3,102 +3,46 @@
 % then Assgins the points to corresponding cluster via Algorithnm 1,
 % and finally return the ClusteredData
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [Outputmodel,ClusteredData] = AssginPtsToCluster(Data, ClusterNumbers, para, Beta, IterationNum, model)
+function [Outputmodel,ClusteredData] = AssginPtsToCluster(Data, ClusterNumbers, para, IterationNum, TotalIterationNum)
 %Initialization
-PrevCost = rand(ClusterNumbers,1); 
-CurrCost = zeros(ClusterNumbers,1);
-PrevPath = cell(ClusterNumbers,1);
-CurrPath = cell(ClusterNumbers,1);
+% PrevCost = rand(ClusterNumbers,1); 
+% CurrCost = zeros(ClusterNumbers,1);
+% PrevPath = cell(ClusterNumbers,1);
+% CurrPath = cell(ClusterNumbers,1);
 
-
-
-Datalength = length(Data); 
-
-
-if (IterationNum == 1) 
-    Datalength = length(Data); 
-
-    %start = zeros(ClusterNumbers,1);
-    %stop  = zeros(ClusterNumbers,1);
-    Path = zeros(Datalength,1);
-    PrevSelection = 1;
-
-    %for ClusterNum = 2 situation
-    BoundaryIndex = 0;
-    for i = 1:Datalength
-        if (Data(i).Feature == 1)
-           BoundaryIndex = BoundaryIndex + 1;
-        end
-    end
-    %start(1,1) = 1;
-    %start(2,1) = BoundaryIndex;
-    %stop(1,1) = BoundaryIndex+1;
-    %stop(2,1) = Datalength;
-end
-%dbstop in AssginPtsToCluster at 46
-
+SeqsNum = length(Data); 
+Path = cell(SeqsNum,1);
 ClusterData = cell(ClusterNumbers,1);
 
-if (IterationNum == 1)
-    for counter = 1:Datalength
-        ClusterData{Data(counter).Feature} = [ClusterData{Data(counter).Feature},Data(counter)] ;
+
+for I = 1:SeqsNum
+    Timelength = length(Data(I).Time);
+    TimeStamp = (Data(I).Stop)*IterationNum/TotalIterationNum;
+
+    for K = 1:Timelength
+        if (Data(I).Time(K) < TimeStamp)
+            Data(I).Group(K) = 1;               
+        else
+            Data(I).Group(K) = 2;  
+        end
     end
-else
-    ClusterData = Data;
+end
+%Gnerating ClusterData.
+ NewSeqs = BreakSeqs(Data);%break down into two seqs.
+ for q = 1:ClusterNumbers
+     ClusterData{q} = NewSeqs{q}; 
+ end
+
+ %10 testLocation (Exhausting Searching...)
+for j = 1:ClusterNumbers
+        model1(j) = Initialization_Basis(ClusterData{j});
+        model(j) = Learning_MLE_S_nonstationary(ClusterData{j},model1(j),para);
 end
 
-
-InnerFirstTimeFlag = 1;          
-for i = 1:Datalength
-    for j = 1:ClusterNumbers
-        MinIndex = find(PrevCost == min(PrevCost)); %find the smallest index
-
-       
-        %if this is the first time of this loop.
-        if (InnerFirstTimeFlag == 1 )
-            model1(j) = Initialization_Basis(ClusterData{j});
-            model(j) = Learning_MLE_S_nonstationary(ClusterData{j},model1(j),para);
-        end
-        if (j > 1)  
-           InnerFirstTimeFlag = 0;
-        end
-        
-        Loglike = Loglike_Basis_NonStationary(Data(i), model(j), para);
-
-        CurrCost(j) = Loglike;
-        if (PrevSelection ~= j)
-            CurrCost(j) = CurrCost(j) - Beta;
-        end
-%         %to be modeified
-%         if (PrevCost(MinIndex) + Beta > PrevCost(j))
-%             CurrCost(j) = PrevCost(j) - Loglike;
-%             CurrPath{j} = [PrevPath{j},j];
-%             %Path(i) = j;
-%             %PrevSelection = j; %to be modified.
-%         else
-%             CurrCost(j) = PrevCost(MinIndex) - Loglike + Beta;
-%             CurrPath{j} = [PrevPath{MinIndex},j];
-%             %Path(i) = MinIndex;
-%         end    
-    end
-    tempIndex = find(CurrCost == max(CurrCost));
-    Path(i) = tempIndex;
-        
-%     PrevCost = CurrCost;
-%     PrevPath = CurrPath;
-end
-
-%FinalMinIndex = find(CurrCost == min(CurrCost));
-%Path = CurrPath{FinalMinIndex};
-
-
-ClusterDataFinal = cell(ClusterNumbers,1);
-for counter = 1:Datalength
-    Data(counter).Feature = Path(counter);
-    ClusterDataFinal{Path(counter)} = [ClusterDataFinal{Path(counter)},Data(counter)] ;
-end
-
-ClusteredData = ClusterDataFinal;  
 Outputmodel = model;
+ClusteredData = ClusterData;
+
 end
+
+
 

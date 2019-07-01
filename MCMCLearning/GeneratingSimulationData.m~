@@ -1,8 +1,17 @@
 %In the another half of the Seqs, it generates data
 %corresponding to a different structure pattern.
 
-function [Seqs1,options] = GeneratingSimulationData(options,D)
+function [Seqs1,options] = GeneratingSimulationData(D)
 
+% 'options' structure.
+options.N = 500; % the number of sequences
+options.Nmax = 500; % the maximum number of events per sequence
+options.Tmax = 200; % the maximum size of time window
+options.tstep = 0.1;
+options.dt = 0.1; % the length of each time step
+options.M = 250; % the number of steps in the time interval for computing sup-intensity
+options.GenerationNum = 100; % the number of generations for branch processing
+%D = 8; % the dimension of Hawkes processes
 
 %for Tmax 1 = 1honr, 1 week = 24*7 = 168, 
 
@@ -42,7 +51,7 @@ para.A = zeros(D, D, L);
 for l = 1:L
     para.A(:,:,l) = (0.5^l)*(0.5+ones(D)); %(0.5^l)*(0.5+ones(D));
 end
-mask = rand(D).*double(rand(D)>0.7); %rand(D).*double(rand(D)>0.7);
+mask = rand(D).*double(rand(D)>0.9); %rand(D).*double(rand(D)>0.7);
 para.A = para.A.*repmat(mask, [1,1,L]);
 para.A = 0.25*para.A./max(abs(eig(sum(para.A,3)))); % ensure the stationarity of Hawkes process
 tmp = para.A;
@@ -54,7 +63,7 @@ for di = 1:D
     end
 end
 
-%para.A =para.A*5;
+para.A =para.A*5;
 para_second_half = para;
 
 
@@ -191,6 +200,7 @@ for n = 1:options.N
             n, options.N, length(Seqs(n).Mark), toc);
     end
 end
+
 
 Seqs1 = Seqs;
 

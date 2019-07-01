@@ -15,7 +15,8 @@ addpath('Visualization');
 addpath('MiniBlogData');
 addpath('non-stationary Hawkes');
 addpath('MCMCLearning');
-
+addpath('NonStationarySeqsTestData');
+addpath('resultAofMCMC');
 
 load('MiniBlogSeqsTwoAndHalfYears.mat');
 Seqs1 = MiniBlogSeqsTwoAndHalfYears;

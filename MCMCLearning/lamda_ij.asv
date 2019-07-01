@@ -61,10 +61,11 @@ for c = 1:length(Seqs)
                    continue; 
                 end
 
+                amplifier = 100;
                 dt = ti - tj;
                 gij = MCKernel(dt, model);
                 %additonal part
-                gij = gij*a(i_son,j_parent,timestamp);
+                gij = amplifier*gij*a(i_son,j_parent,timestamp);  %sparsity problem
 
                 lambdai = lambdai + sum(gij);
             end
@@ -74,5 +75,8 @@ for c = 1:length(Seqs)
 end
  
 value = lambdai;
+if value <0
+    value = 0;
+end
 
 end

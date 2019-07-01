@@ -54,7 +54,7 @@ for c = 1:length(Seqs)
             dt = ti - tj;
             gij = Kernel(dt, model);
             %additonal part 
-            ti = floor(ti);
+            ti = floor(ti/50);
             if (ti == 0)
                 ti = ti + 1;
             end

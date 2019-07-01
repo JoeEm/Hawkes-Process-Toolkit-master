@@ -10,6 +10,8 @@ function value = lamda_ij(Seqs,model,i_son,j_parent,timestamp,alg)
 muest = model.mu;
 a = model.A;
 
+muest = muest/sum(muest);
+
 %D = size(Aest, 1);
 
 tic;
@@ -61,10 +63,12 @@ for c = 1:length(Seqs)
                    continue; 
                 end
 
+                amplifier = 10000;
                 dt = ti - tj;
                 gij = MCKernel(dt, model);
                 %additonal part
-                gij = gij*a(i_son,j_parent,timestamp);
+                gij = amplifier*gij*a(i_son,j_parent,timestamp);  %sparsity problem
+                %gij = gij*a(i_son,j_parent,timestamp); 
 
                 lambdai = lambdai + sum(gij);
             end
@@ -74,5 +78,8 @@ for c = 1:length(Seqs)
 end
  
 value = lambdai;
+if value <0
+    value = 0;
+end
 
 end
