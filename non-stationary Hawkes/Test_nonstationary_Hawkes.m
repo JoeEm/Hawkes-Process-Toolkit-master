@@ -70,12 +70,17 @@ TotalIterationNum = 6;
 
 %GenratingSimulationData
 for j = 1:ClusterNumbers
-    [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j);
+    amplifier = 1 + 9*(j-1);
+    [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier);
 end
-Seqs = LinkingTwoSeqsToOne(Seqs1{1},Seqs1{2});
 
+%for more than 2 patterns 
+for k = 1:(ClusterNumbers-1)
+    Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
+end
+Seqs = Seqs1{k+1};
 
-for IterationNum = 1:TotalIterationNum
+for IterationNum = 1:(TotalIterationNum-1)
     %Clustering Data
     fprintf('clustering Data\n');
     [Outputmodel,ClusteredData] = AssginPtsToCluster(Seqs, ClusterNumbers, para, IterationNum, TotalIterationNum);
@@ -88,7 +93,7 @@ end
 
 
 %Visualization the Loss (and Graph)
-Num = 1:1:TotalIterationNum;
+Num = 1:1:TotalIterationNum-1;
 figure
 
 hold on

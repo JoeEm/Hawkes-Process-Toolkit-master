@@ -1,7 +1,7 @@
 %In the another half of the Seqs, it generates data
 %corresponding to a different structure pattern.
 
-function [Seqs1,para] = GenerateSingleGroupData(options,D,Group)
+function [Seqs1,para] = GenerateSingleGroupData(options,D,Group,amplifier)
 
 
 %for Tmax 1 = 1honr, 1 week = 24*7 = 168, 
@@ -31,7 +31,7 @@ for di = 1:D
     end
 end
 
-
+para.A = para.A * amplifier;
 
 
 %Generating Simulation Data

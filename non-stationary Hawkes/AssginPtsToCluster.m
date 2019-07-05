@@ -14,21 +14,36 @@ SeqsNum = length(Data);
 Path = cell(SeqsNum,1);
 ClusterData = cell(ClusterNumbers,1);
 
+for Q = 1:ClusterNumbers-1 %e.g a seqs is separated into n blcoks through n-1   Tmax = 200
+   location(Q) = Q/ClusterNumbers; 
+   tmp = ((Data(1).Stop)/(Q+1));
+   TimeStamp(Q) = (Data(1).Stop)*location(Q) + tmp*(IterationNum/TotalIterationNum);
+end
 
-for I = 1:SeqsNum
+flag = 0;
+for I = 1:SeqsNum %Partition strategy
     Timelength = length(Data(I).Time);
-    TimeStamp = (Data(I).Stop)*IterationNum/TotalIterationNum;
-
+    Q = 1;
     for K = 1:Timelength
-        if (Data(I).Time(K) < TimeStamp)
-            Data(I).Group(K) = 1;               
+        if (flag ~= 1)
+            if ( Data(I).Time(K) < TimeStamp(Q) ) %
+                Data(I).Group(K) = Q;                               
+            else
+                if (Q ~= ClusterNumbers - 1)
+                    Q = Q+1;
+                else
+                    flag = 1;
+                    Q = Q+1;
+                end
+            end
         else
-            Data(I).Group(K) = 2;  
+            Data(I).Group(K) = Q;    
         end
     end
+    flag = 0;
 end
 %Gnerating ClusterData.
- NewSeqs = BreakSeqs(Data);%break down into two seqs.
+ NewSeqs = BreakSeqs(Data,ClusterNumbers);%break down into two seqs.
  for q = 1:ClusterNumbers
      ClusterData{q} = NewSeqs{q}; 
  end
