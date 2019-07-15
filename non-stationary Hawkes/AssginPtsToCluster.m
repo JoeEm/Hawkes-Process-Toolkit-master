@@ -14,11 +14,22 @@ SeqsNum = length(Data);
 Path = cell(SeqsNum,1);
 ClusterData = cell(ClusterNumbers,1);
 
-for Q = 1:ClusterNumbers-1 %e.g a seqs is separated into n blcoks through n-1   Tmax = 200
-   location(Q) = Q/ClusterNumbers; 
-   tmp = ((Data(1).Stop)/(Q+1));
-   TimeStamp(Q) = (Data(1).Stop)*location(Q) + tmp*(IterationNum/TotalIterationNum);
-end
+%forcing the location ClusterNumbers = 4
+%4/16 is the right location
+location(1) = (IterationNum/10);
+TimeStamp(1) = (Data(1).Stop)*location(1);
+% %fixed
+ %location(2) = 14/16;%8/10
+ %TimeStamp(2) = (Data(1).Stop)*location(2);
+% %fixed
+ %location(3) = 15/16; %9/10
+ %TimeStamp(3) = (Data(1).Stop)*location(3);
+
+%for Q = 1:ClusterNumbers-1 %e.g a seqs is separated into n blcoks through n-1   Tmax = 200
+%   location(Q) = Q/ClusterNumbers; 
+%   tmp = ((Data(1).Stop)/(Q+1));
+%   TimeStamp(Q) = (Data(1).Stop)*location(Q) + tmp*(IterationNum/TotalIterationNum);
+%end
 
 flag = 0;
 for I = 1:SeqsNum %Partition strategy
@@ -42,6 +53,8 @@ for I = 1:SeqsNum %Partition strategy
     end
     flag = 0;
 end
+
+
 %Gnerating ClusterData.
  NewSeqs = BreakSeqs(Data,ClusterNumbers);%break down into two seqs.
  for q = 1:ClusterNumbers

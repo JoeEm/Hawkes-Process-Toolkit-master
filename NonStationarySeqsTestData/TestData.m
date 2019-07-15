@@ -1,14 +1,28 @@
-%clear;
-
+clear;
+% 
 % options.N = 500; % the number of sequences
 % options.Nmax = 500; % the maximum number of events per sequence
-% options.Tmax = 200; % the maximum size of time window
+% options.Tmax = 500; % the maximum size of time window
 % options.tstep = 0.1;
 % options.dt = 0.1; % the length of each time step
 % options.M = 250; % the number of steps in the time interval for computing sup-intensity
 % options.GenerationNum = 100; % the number of generations for branch processing
 % D = 8; % the dimension of Hawkes processes
 % 
+% for j = 1:2
+%    %amplifier = 1 + 9*(j-1);
+%     amplifier = 1;
+%     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier);
+% end
+% 
+% %for more than 2 patterns 
+% for k = 1:(2-1)
+%     Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
+% end
+% Seqs = Seqs1{k+1};
+% batchsize = 50;
+% NewSeqs = BatchSizingData(Seqs,batchsize);
+
 % Group = 2;
 % for k = 1:Group
 %     [Seqs{k},para] = GenerateSingleGroupData(options,D,k);
@@ -41,25 +55,25 @@
 % NewSeqs1 = NewSeqs{1};
 % NewSeqs2 = NewSeqs{2};
 
-
-alg1.LowRank = 0; % without low-rank regularizer
-alg1.Sparse = 1; % with sparse regularizer
-alg1.alphaS = 10; %MLE-S
-alg1.GroupSparse = 1; % with group-sparse regularizer
-alg1.alphaGS = 100; %MLE-SGL
-alg1.outer = 5;%5
-alg1.rho = 0.1; % the initial parameter for ADMM--
-alg1.inner = 8;%8
-alg1.thres = 1e-5;
-alg1.Tmax = [];
-alg1.storeErr = 0;
-alg1.storeLL = 0;
-alg1.As = 10; %for Local Independence R.
-alg1.Ap = 1000;%for Pairwise similarity R.
-
-
-model1 = Initialization_Basis(Seqs1{1}); 
-model2 = Initialization_Basis(Seqs1{2}); 
+% 
+% alg1.LowRank = 0; % without low-rank regularizer
+% alg1.Sparse = 1; % with sparse regularizer
+% alg1.alphaS = 10; %MLE-S
+% alg1.GroupSparse = 1; % with group-sparse regularizer
+% alg1.alphaGS = 100; %MLE-SGL
+% alg1.outer = 5;%5
+% alg1.rho = 0.1; % the initial parameter for ADMM--
+% alg1.inner = 8;%8
+% alg1.thres = 1e-5;
+% alg1.Tmax = [];
+% alg1.storeErr = 0;
+% alg1.storeLL = 0;
+% alg1.As = 10; %for Local Independence R.
+% alg1.Ap = 1000;%for Pairwise similarity R.
+% 
+% 
+% model1 = Initialization_Basis(Seqs1{1}); 
+% model2 = Initialization_Basis(Seqs1{2}); 
 
 %model1 = Initialization_Basis(Seqs1);
 % model1.kernel = 'gauss';
@@ -85,56 +99,56 @@ model2 = Initialization_Basis(Seqs1{2});
 %     options.Tmax = 200;
 %     A{i} = ImpactFunc(para, options);
 % end
-a = 9;
-
-ClusterNumbers = 5;
-for i = 1:ClusterNumbers
-    para.kernel = modelStorage{a}(i).kernel;
-    para.w = modelStorage{a}(i).w;
-    para.landmark = modelStorage{a}(i).landmark;
-    para.mu = modelStorage{a}(i).mu;
-    para.A = modelStorage{a}(i).A;
-    options.Tmax = 200;
-    A{i} = ImpactFunc(para, options);
-end
-
-
-figure
-
-subplot(231)        
-imagesc(A{1})
-%title(sprintf('Ground-Truth-MLE First-Half'))
-title(sprintf('Estimated-MLE-1')) 
-axis square
-colorbar
-
-subplot(232)       
-imagesc(A{2})
-%title(sprintf('Ground-Truth-MLE Second-Half'))
-title(sprintf('Estimated-MLE-2'))  
-colorbar
-axis square
-
-subplot(233)        
-imagesc(A{3})
-%title(sprintf('Ground-Truth-MLE First-Half'))
-title(sprintf('Estimated-MLE-3'))   
-axis square
-colorbar
-
-subplot(234)        
-imagesc(A{4})
-%title(sprintf('Ground-Truth-MLE First-Half')) 
-title(sprintf('Estimated-MLE-4'))  
-axis square
-colorbar
-
-subplot(235)        
-imagesc(A{5})
-%title(sprintf('Ground-Truth-MLE First-Half')) 
-title(sprintf('Estimated-MLE-5'))  
-axis square
-colorbar
+% a = 9;
+% 
+% ClusterNumbers = 5;
+% for i = 1:ClusterNumbers
+%     para.kernel = modelStorage{a}(i).kernel;
+%     para.w = modelStorage{a}(i).w;
+%     para.landmark = modelStorage{a}(i).landmark;
+%     para.mu = modelStorage{a}(i).mu;
+%     para.A = modelStorage{a}(i).A;
+%     options.Tmax = 200;
+%     A{i} = ImpactFunc(para, options);
+% end
+% 
+% 
+% figure
+% 
+% subplot(231)        
+% imagesc(A{1})
+% %title(sprintf('Ground-Truth-MLE First-Half'))
+% title(sprintf('Estimated-MLE-1')) 
+% axis square
+% colorbar
+% 
+% subplot(232)       
+% imagesc(A{2})
+% %title(sprintf('Ground-Truth-MLE Second-Half'))
+% title(sprintf('Estimated-MLE-2'))  
+% colorbar
+% axis square
+% 
+% subplot(233)        
+% imagesc(A{3})
+% %title(sprintf('Ground-Truth-MLE First-Half'))
+% title(sprintf('Estimated-MLE-3'))   
+% axis square
+% colorbar
+% 
+% subplot(234)        
+% imagesc(A{4})
+% %title(sprintf('Ground-Truth-MLE First-Half')) 
+% title(sprintf('Estimated-MLE-4'))  
+% axis square
+% colorbar
+% 
+% subplot(235)        
+% imagesc(A{5})
+% %title(sprintf('Ground-Truth-MLE First-Half')) 
+% title(sprintf('Estimated-MLE-5'))  
+% axis square
+% colorbar
 
 % 
 % A1 = ImpactFunc(model_MLE_SGL, options);
@@ -172,4 +186,24 @@ colorbar
 %     axis square
 % 
 % end
+Num = 1;
+SumLoss = 2;
 
+    figure
+while(1)
+    Num = [Num; Num+1];
+    SumLoss = [SumLoss; SumLoss+1];
+
+
+    
+    plot(Num, SumLoss, 'bs-');
+    axis tight
+    axis square
+    ylabel('SumLoss');
+    xlabel('Num');
+    hold on
+    drawnow
+    
+    Num  = Num+1;
+    SumLoss = SumLoss + 1;
+end

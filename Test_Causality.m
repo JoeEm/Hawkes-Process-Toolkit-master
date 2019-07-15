@@ -8,14 +8,14 @@
 clear
 
 
-options.N = 2000; % the number of sequences
+options.N = 7000; % the number of sequences
 options.Nmax = 500; % the maximum number of events per sequence
-options.Tmax = 200; % the maximum size of time window
+options.Tmax = 500; % the maximum size of time window
 options.tstep = 0.1;
 options.dt = 0.1; % the length of each time step
 options.M = 250; % the number of steps in the time interval for computing sup-intensity
 options.GenerationNum = 100; % the number of generations for branch processing
-D = 8; % the dimension of Hawkes processes
+D = 4; % the dimension of Hawkes processes
 
 
 
@@ -44,42 +44,14 @@ for di = 1:D
     end
 end
 
-% for di = 1:D
-%     for dj = 1:D
-%         if (di == 1|| di == 2 || di == 3  || dj ==1 || dj==2 || dj ==3 )
-%             para1.A(dj, :, di) = 0;
-%         end
-%     end
-% end
-
-for di = 1:D
-    for dj = 1:D
-        if (...
-            (di == 1 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||... 
-            (di == 2 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
-            (di == 3 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
-            (di == 4 && (dj == 1 || dj ==2 || dj ==3 || dj ==4)) ||...
-            (di == 5 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
-            (di == 6 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
-            (di == 7 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)) ||...
-            (di == 8 && (dj == 5 || dj ==6 || dj ==7 || dj ==8)))
-                        
-                para1.A(dj, :, di) = 0;
-        end
-    end
-end
-
 % two simulation methods
-Seqs1 = Simulation_Branch_HP(para1, options);
+%Seqs1 = Simulation_Branch_HP(para1, options);
+Seqs = GeneratingSimulationData(options,D);
 %Seqs1 = Simulation_Thinning_HP(para1, options);
-
-
+Seqs1 =  BreakSeqs(Seqs,2);
 %%
 % Visualize all impact functions and infectivity matrix
-A = ImpactFunc( para1, options );
-
-
-
+% A = ImpactFunc( para1, options );
 disp('Maximum likelihood estimation and basis representation') 
 
 alg1.LowRank = 0; % without low-rank regularizer
@@ -97,9 +69,9 @@ alg1.storeLL = 0;
 alg1.As = 10; %for Local Independence R.
 alg1.Ap = 1000;%for Pairwise similarity R.
 
-
-model1 = Initialization_Basis(Seqs1); 
-
+model_w = Initialization_Basis(Seqs);  
+model1 = Initialization_Basis(Seqs1{1}); 
+model2 = Initialization_Basis(Seqs1{2}); 
 %model1 = Initialization_Basis(Seqs1);
 % model1.kernel = 'gauss';
 % model1.w = pi*options.Nmax/(options.Tmax);  %According to the Real-Data Experiment
@@ -107,28 +79,37 @@ model1 = Initialization_Basis(Seqs1);
 % model1.A = rand(D, length(model1.landmark), D);
 % model1.mu = rand(D, 1)./D;
 
-
-% % learning the model by MLE
-model1 = Learning_MLE_Basis( Seqs1, model1, alg1 ); 
-A1 = ImpactFunc( model1, options );
+% 
+% % % learning the model by MLE
+% model1 = Learning_MLE_Basis( Seqs1, model1, alg1 ); 
+% A1 = ImpactFunc( model1, options );
 
 % learning the model by MLE-SGL
 alg1.Sparse=1;
 alg1.GroupSparse=1; 
-model_MLE_SGL = Learning_MLE_S_Basis( Seqs1, model1, alg1 );
+model_MLE_SGL_1 = Learning_MLE_S_Basis( Seqs1{1}, model1, alg1 );
+model_MLE_SGL_2 = Learning_MLE_S_Basis( Seqs1{2}, model2, alg1 );
+model_MLE_SGL_whole = Learning_MLE_S_Basis( Seqs1{2}, model_w, alg1 );
 
-A1 = ImpactFunc(model_MLE_SGL, options);
-
+A1 = ImpactFunc(model_MLE_SGL_1, options);
+A2 = ImpactFunc(model_MLE_SGL_2, options);
+A3 = ImpactFunc(model_MLE_SGL_whole, options);
 
 % Visualize the infectivity matrix (the adjacent matrix of Granger causality graph)
 figure
-subplot(121)        
-imagesc(A)
-title('Ground truth of infectivity') 
+subplot(131)        
+imagesc(A1)
+title('Estimated infectivity-MLE-1') 
 axis square
 colorbar
-subplot(122)        
-imagesc(A1)
-title('Estimated infectivity-MLE')
+subplot(132)        
+imagesc(A2)
+title('Estimated infectivity-MLE-2')
+colorbar
+axis square
+
+subplot(133)        
+imagesc(A3)
+title('Estimated infectivity-MLE-whole-shit')
 colorbar
 axis square

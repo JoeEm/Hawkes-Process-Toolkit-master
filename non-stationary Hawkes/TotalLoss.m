@@ -5,7 +5,7 @@
 % ClusteredData{ClusterNumbers}  cell structure
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function Loss = TotalLoss( ClusterNumbers, ClusteredData, model, alg)
+function [Loss,Loglike] = TotalLoss( ClusterNumbers, ClusteredData, model, alg)
 %Initialization
 % Loss = 0; 
 % Norm2 = 0;
@@ -34,8 +34,8 @@ function Loss = TotalLoss( ClusterNumbers, ClusteredData, model, alg)
 % Loss = Loss + HawkesLoglikelihood; 
 Loss = 0;
 for i = 1:ClusterNumbers
-    Loglike = Loglike_Basis_NonStationary(ClusteredData{i}, model(i), alg);
-    Loss = Loss + Loglike;
+    Loglike(i) = Loglike_Basis_NonStationary(ClusteredData{i}, model(i), alg);
+    Loss = Loss + Loglike(i);
 end
 
 end

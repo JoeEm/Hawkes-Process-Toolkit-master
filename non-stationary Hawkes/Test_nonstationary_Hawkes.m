@@ -64,13 +64,14 @@ ClusterNumbers = 2;
 IterationNum = 1;
 FirstTimeLossFlag = 1;
 
-TotalIterationNum = 6;
+TotalIterationNum = 20;
 %modelStorage = cell(TotalIterationNum,1);
 %Loss = zeros(TotalIterationNum,1);
 
 %GenratingSimulationData
 for j = 1:ClusterNumbers
-    amplifier = 1 + 9*(j-1);
+   %amplifier = 1 + 9*(j-1);
+    amplifier = 1;
     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier);
 end
 
@@ -87,13 +88,14 @@ for IterationNum = 1:(TotalIterationNum-1)
  
     %Comuputing the Loss
     fprintf('computing the Loss \n');
-    Loss(IterationNum) = TotalLoss(ClusterNumbers, ClusteredData, Outputmodel, para);
+    [Loss(IterationNum),Loglike{IterationNum}] = TotalLoss(ClusterNumbers, ClusteredData, Outputmodel, para);
     modelStorage{IterationNum} = Outputmodel;
 end
 
 
 %Visualization the Loss (and Graph)
-Num = 1:1:TotalIterationNum-1;
+%Num = 1:1:TotalIterationNum-1;
+Num = 1:1:9;
 figure
 
 hold on
@@ -101,5 +103,15 @@ plot(Num, Loss, 'bs-');
 axis tight
 axis square
 ylabel('Loss');
+xlabel('Iteration');
+hold off
+
+figure
+
+hold on
+plot(Num, b, 'bs-');
+axis tight
+axis square
+ylabel('Loglike of Part-2');
 xlabel('Iteration');
 hold off

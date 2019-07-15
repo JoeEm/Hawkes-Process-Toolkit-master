@@ -1,0 +1,134 @@
+function [ClusteredData,Loss, location, FinalPath] = FasterAssginPtsToCluster(Data, NewData, ClusterNumbers, para, IterationNum, Beta)
+
+SeqsNum = length(NewData); 
+ClusterData = cell(ClusterNumbers,1);
+
+if (IterationNum == 1) %Initialization
+   %computing the timeLocation for originalData
+    for i = 1:ClusterNumbers - 1
+       location(i) = i/3;
+       TimeLocation(i) =location(i) * max(Data(1).Time);
+   end
+   %Partitioning the original Data(Seqs)
+   flag = 0;
+   for I = 1:length(Data) 
+    Timelength = length(Data(I).Time);
+    Q = 1;
+        for K = 1:Timelength
+            if (flag ~= 1)
+                if ( Data(I).Time(K) < TimeLocation(Q) ) %
+                    Data(I).Group(K) = Q;                               
+                else
+                    if (Q ~= ClusterNumbers - 1)
+                        Q = Q+1;
+                    else
+                        flag = 1;
+                        Q = Q+1;
+                    end
+                end
+            else
+                Data(I).Group(K) = Q;    
+            end
+        end
+        flag = 0;
+   end
+   %Gnerating ClusterData.
+   NeSeqs = BreakSeqs(Data,ClusterNumbers);%break down into two seqs.
+   for q = 1:ClusterNumbers
+        ClusterData{q} = NeSeqs{q}; 
+   end
+   %learning the corresponding model
+   for i = 1:ClusterNumbers
+       model1(i) = Initialization_Basis(ClusterData{i});
+       model(i) = Learning_MLE_S_nonstationary(ClusterData{i},model1(i),para);
+   end
+else
+    %compute the new Timelocation for originalData
+    for i = 1:ClusterNumbers-1
+        for j = 1:length(NewData{1})
+            if (NewData{1}(j).ClusterNum == (i + 1))
+                TimeLocation(i) = NewData{1}(j).Start;
+                break;
+            else
+                continue;
+            end
+        end
+    end
+    %Partitioning the original Data(Seqs)
+    flag = 0;
+    for I = 1:length(Data) 
+        Timelength = length(Data(I).Time);
+        Q = 1;
+            for K = 1:Timelength
+                if (flag ~= 1)
+                    if ( Data(I).Time(K) < TimeLocation(Q) ) 
+                        Data(I).Group(K) = Q;                               
+                    else
+                        if (Q ~= ClusterNumbers - 1)
+                            Q = Q+1;
+                        else
+                            flag = 1;
+                            Q = Q+1;
+                        end
+                    end
+                else
+                    Data(I).Group(K) = Q;    
+                end
+            end
+            flag = 0;
+    end
+    %Gnerating ClusterData.
+    NewSeqs = BreakSeqs(Data,ClusterNumbers);%break down into two seqs.
+    for q = 1:ClusterNumbers
+        ClusterData{q} = NewSeqs{q}; 
+    end
+    %learning the corresponding model
+    for i = 1:ClusterNumbers
+        model1(i) = Initialization_Basis(ClusterData{i});
+        model(i) = Learning_MLE_S_nonstationary(ClusterData{i},model1(i),para);
+    end
+end
+
+%Assigning the poins to clusters.(KDD-TICC-Algorithnm 1)
+PrevCost = zeros(1,ClusterNumbers);
+CurrCost = zeros(1,ClusterNumbers);
+PrevPath = cell(1,ClusterNumbers);
+CurrPath = cell(1,ClusterNumbers);
+
+for i = 1:length(NewData{1})
+    for K = 1:ClusterNumbers
+        MinIndex = find(PrevCost == min(PrevCost));
+        MinIndex = MinIndex(1);
+        Loglike = 0;
+        for q = 1:length(NewData)
+            Loglike = Loglike + Loglike_Basis_NonStationary(NewData{q}(i), model(K), para);
+        end
+        if (PrevCost(MinIndex)) + Beta > PrevCost(K)
+            CurrCost(K) = PrevCost(K) - Loglike;
+            CurrPath{K} = [CurrPath{K}; K];
+        else
+            CurrCost(K) = PrevCost(K) - Loglike + Beta;
+            CurrPath{K} = [CurrPath{MinIndex}; MinIndex];
+        end
+    end
+    PrevCost = CurrCost;
+    PrevPath = CurrPath;
+end
+
+FinalMinIndex = find(CurrCost == min(CurrCost));
+FinalPath = CurrPath{FinalMinIndex};
+Loss = CurrCost(FinalMinIndex);
+
+%Rearrange the NewData.
+for i = 1:length(NewData)
+   Counter = 1;
+   for j = 1:length(NewData{1}) 
+       NewData{i}(j).ClusterNum = FinalPath(Counter);
+       Counter = Counter + 1;
+   end
+end
+
+
+ClusteredData = NewData;
+
+end

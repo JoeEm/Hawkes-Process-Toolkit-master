@@ -1,11 +1,8 @@
 %In the another half of the Seqs, it generates data
 %corresponding to a different structure pattern.
-
 function [Seqs1,options] = GeneratingSimulationData(options,D)
 
-
 %for Tmax 1 = 1honr, 1 week = 24*7 = 168, 
-
 disp('Approximate simulation of Hawkes processes via branching process')
 disp('Complicated gaussian kernel')
 para.kernel = 'gauss'; % the type of kernels per impact function
@@ -33,49 +30,13 @@ end
 
 para_first_half = para;
 
-
-para.w = 2; % 2
-para.landmark = 0:1:12; % the central locations of kernels
-L = length(para.landmark);
-para.mu = rand(D,1)/D;
-para.A = zeros(D, D, L);
-for l = 1:L
-    para.A(:,:,l) = (0.5^l)*(0.5+ones(D)); %(0.5^l)*(0.5+ones(D));
-end
-mask = rand(D).*double(rand(D)>0.7); %rand(D).*double(rand(D)>0.7);
-para.A = para.A.*repmat(mask, [1,1,L]);
-para.A = 0.25*para.A./max(abs(eig(sum(para.A,3)))); % ensure the stationarity of Hawkes process
-tmp = para.A;
-para.A = reshape(para.A, [D, L, D]);
-for di = 1:D
-    for dj = 1:D
-        phi = tmp(di, dj, :);
-        para.A(dj, :, di) = phi(:);
-    end
-end
-
-%para.A =para.A*5;
-para_second_half = para;
-
-
-
-
 % Visualize all impact functions and infectivity matrix
 %first test: only exsit two patterns.
 A = ImpactFunc( para_first_half, options );
-A1 = ImpactFunc( para_second_half, options );
 
-
-figure
-subplot(121)        
+figure        
 imagesc(A)
-title('Ground truth of infectivity G1')
-axis square
-colorbar
-
-subplot(122)        
-imagesc(A1)
-title('Ground truth of infectivity G2') 
+title('Ground truth of infectivity G')
 axis square
 colorbar
 
@@ -89,9 +50,7 @@ Seqs = struct('Time', [], ...
 tic
 
 para = para_first_half;
-
 Group = 0;
-
 for n = 1:options.N
     % the 0-th generation, simulate exogeneous events via Poisson processes
     History = Simulation_Thinning_Poisson(para.mu, 0, options.Tmax);
@@ -100,14 +59,14 @@ for n = 1:options.N
     for q = 1:size(History,2) %two pattern situation...
         New_History(1,q) = History(1,q);
         New_History(2,q) = History(2,q);
-        
-        if (History(1,q)<= options.Tmax/2)
-            New_History(3,q) = 1;
-        else
-            New_History(3,q) = 2;
-        end
-            
+    end    
+
+    if (History(1,q)<= options.Tmax/2)
+        New_History(3,q) = 1;
+    else
+        New_History(3,q) = 2;
     end
+
     current_set = New_History;
     
     for k = 1:options.GenerationNum
@@ -119,7 +78,7 @@ for n = 1:options.N
             t = 0;
             
             if ( ti+t > (options.Tmax/2))
-                para = para_second_half;
+                para = para_first_half;
             else
                 para = para_first_half;
             end  
@@ -132,13 +91,14 @@ for n = 1:options.N
                 U = rand;
                 %In the another half of the Seqs, it generates data
                 %corresponding to a different structure pattern.
-                if ( ti+t <= (options.Tmax/2))
-                    para = para_second_half;
+                if ( ti+t <= (options.Tmax/3))
+                    para = para_first_half;
                     Group = 1;
                 else
                     para = para_first_half;
                     Group = 2;
-                end            
+                end          
+
                 phi_ts = ImpactFunction(ui, t+s, para);  %relate the Data Generation with A
                 mts = sum(phi_ts);
 
@@ -177,7 +137,6 @@ for n = 1:options.N
     [~, index] = sort(New_History(1,:), 'ascend');
     Seqs(n).Time = New_History(1,index);
     Seqs(n).Mark = New_History(2,index);
-    
     Seqs(n).Group = New_History(3,index);
     
     Seqs(n).Start = 0;

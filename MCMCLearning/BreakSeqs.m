@@ -7,6 +7,7 @@ for CluNum = 1:ClusterNumbers
                   'Start',   [], ...
                   'Stop',    [], ...
                   'Feature', [], ...
+                  'SeqsCluNum', [], ...
                   'Group', []);    
 end
 
@@ -17,6 +18,7 @@ for k = 1:size(InputSeqs,2)
               'Start',   [], ...
               'Stop',    [], ...
               'Feature', [], ...
+              'SeqsCluNum', [], ...
               'Group', []);
 
         if (CluNum == 1)
@@ -30,11 +32,12 @@ for k = 1:size(InputSeqs,2)
         for i = startpoint:( startpoint + lengthofSeqs - 1)
             NewSeqs1{CluNum}.Time(counter) = InputSeqs(k).Time(i);
             NewSeqs1{CluNum}.Mark(counter) = InputSeqs(k).Mark(i);
-            NewSeqs1{CluNum}.Group(counter) = InputSeqs(k).Group(i);
+            NewSeqs1{CluNum}.Group(counter) = InputSeqs(k).Group(startpoint);
             counter = counter + 1;
         end
             NewSeqs1{CluNum}.Start = min(NewSeqs1{CluNum}.Time);
             NewSeqs1{CluNum}.Stop =  max(NewSeqs1{CluNum}.Time);
+            NewSeqs1{CluNum}.SeqsCluNum =  InputSeqs(k).Group(i);
         
         if (FirstTimeFlag == 1)
             for a = 1:length(NewSeqs1{CluNum}.Time)
@@ -43,7 +46,8 @@ for k = 1:size(InputSeqs,2)
                 FHSeqs{CluNum}(k).Group(a) = NewSeqs1{CluNum}.Group(a);
             end
                 FHSeqs{CluNum}(k).Start = min(FHSeqs{CluNum}(k).Time);
-                FHSeqs{CluNum}(k).Stop =  max(FHSeqs{CluNum}(k).Time);       
+                FHSeqs{CluNum}(k).Stop =  max(FHSeqs{CluNum}(k).Time);
+                FHSeqs{CluNum}(k).SeqsCluNum =  NewSeqs1{CluNum}.Group(1); 
         else       
             FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
         end            

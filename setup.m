@@ -17,6 +17,7 @@ addpath('non-stationary Hawkes');
 addpath('MCMCLearning');
 addpath('NonStationarySeqsTestData');
 addpath('resultAofMCMC');
+addpath('KDDHawkes');
 
 load('MiniBlogSeqsTwoAndHalfYears.mat');
 Seqs1 = MiniBlogSeqsTwoAndHalfYears;
