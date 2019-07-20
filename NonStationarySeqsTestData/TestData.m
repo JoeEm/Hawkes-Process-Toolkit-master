@@ -1,49 +1,200 @@
 clear;
 % 
-% options.N = 500; % the number of sequences
-% options.Nmax = 500; % the maximum number of events per sequence
-% options.Tmax = 500; % the maximum size of time window
-% options.tstep = 0.1;
-% options.dt = 0.1; % the length of each time step
-% options.M = 250; % the number of steps in the time interval for computing sup-intensity
-% options.GenerationNum = 100; % the number of generations for branch processing
-% D = 8; % the dimension of Hawkes processes
-% 
-% for j = 1:2
+options.N = 500; % the number of sequences
+options.Nmax = 500; % the maximum number of events per sequence
+options.Tmax = 200; % the maximum size of time window
+options.tstep = 0.1;
+options.dt = 0.1; % the length of each time step
+options.M = 250; % the number of steps in the time interval for computing sup-intensity
+options.GenerationNum = 100; % the number of generations for branch processing
+D = 4; % the dimension of Hawkes processes
+
+ClusterNumbers = 4;
+% A1 = 0;
+% flag = 0;
+% for j = 1:ClusterNumbers
 %    %amplifier = 1 + 9*(j-1);
 %     amplifier = 1;
-%     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier);
+%     MaskValue = 0.7;
+%     if (j == 3)
+%        A1 = paraDataGenrating{1}.A;
+%        flag = 1;
+%     end
+%     if (j == 4)
+%        A1 = paraDataGenrating{2}.A;
+%        flag = 1;
+%     end
+%     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier,MaskValue,A1, flag);
+%     flag = 0;
+% end
+load 1212Seqs720.mat
+InputSeqs = Data;
+%Seqs = BreakSeqs(InputSeqs);
+ %[NewSeqs,DSeqs] = BatchSizingData(Seqs,20);
+
+FirstTimeFlag = 1;
+
+
+for k = 1:size(InputSeqs,2)
+    CluNum = 1;
+    Quitflag = 0;
+    q=1;
+    while (q <= (length(InputSeqs(k).Time)-1) )
+        
+      NewSeqs1{CluNum}= struct(   'Time', [], ...
+                                  'Mark',    [], ...
+                                  'Start',   [], ...
+                                  'Stop',    [], ...
+                                  'Feature', [], ...
+                                  'SeqsCluNum', [], ...
+                                  'Group', []);
+  
+       setStartpiontFlag = 1;
+       setlengthSeqsFlag = 1;
+       StartofaSeqsFlag = 1;
+       if ( (InputSeqs(k).Group(q) ~= InputSeqs(k).Group(q+1)) && StartofaSeqsFlag == 1)
+           startpoint = q;
+           lengthofSeqs = 1;
+           q = q+1;
+           StartofaSeqsFlag = 0;
+       else
+           while (InputSeqs(k).Group(q) == InputSeqs(k).Group(q+1) || lengthofSeqs ==0)                  
+               if (setlengthSeqsFlag == 1) 
+                    lengthofSeqs = 1;
+                    setlengthSeqsFlag = 0;
+               end
+               if (lengthofSeqs >= 1 )
+                    LengthExistFlag = 0;
+               end
+               lengthofSeqs=lengthofSeqs+1;      
+               q = q+1;
+               if (q > (length(InputSeqs(k).Time)-1) )
+                   Quitflag = 1;
+                   break; 
+               end
+               if (setStartpiontFlag == 1) 
+                   startpoint = q;
+                   setStartpiontFlag = 0;
+               end
+           end
+        end
+%        if (LengthExistFlag == 1)
+%            lengthofSeqs = 1;
+%        end
+       if (StartofaSeqsFlag ~= 0)
+            lengthofSeqs = lengthofSeqs - 1;
+       end
+
+
+        counter = 1;
+        for i = startpoint:( startpoint + lengthofSeqs - 1)
+            NewSeqs1{CluNum}.Time(counter) = InputSeqs(k).Time(i);
+            NewSeqs1{CluNum}.Mark(counter) = InputSeqs(k).Mark(i);
+            NewSeqs1{CluNum}.Group(counter) = InputSeqs(k).Group(i);
+            counter = counter + 1;
+        end
+            NewSeqs1{CluNum}.Start = min(NewSeqs1{CluNum}.Time);
+            NewSeqs1{CluNum}.Stop =  max(NewSeqs1{CluNum}.Time);
+            NewSeqs1{CluNum}.SeqsCluNum =  InputSeqs(k).Group(startpoint);
+
+        if (FirstTimeFlag == 1)
+               
+            FHSeqs{CluNum}= struct(     'Time',    [], ...
+                          'Mark',    [], ...
+                          'Start',   [], ...
+                          'Stop',    [], ...
+                          'Feature', [], ...
+                          'SeqsCluNum', [], ...
+                          'Group', []);    
+
+
+            for a = 1:length(NewSeqs1{CluNum}.Time)
+                FHSeqs{CluNum}(k).Time(a) = NewSeqs1{CluNum}.Time(a);
+                FHSeqs{CluNum}(k).Mark(a) = NewSeqs1{CluNum}.Mark(a);
+                FHSeqs{CluNum}(k).Group(a) = NewSeqs1{CluNum}.Group(a);
+            end
+                FHSeqs{CluNum}(k).Start = min(FHSeqs{CluNum}(k).Time);
+                FHSeqs{CluNum}(k).Stop =  max(FHSeqs{CluNum}(k).Time);
+                FHSeqs{CluNum}(k).SeqsCluNum = NewSeqs1{CluNum}.Group(1);
+        else
+            FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
+        end
+        CluNum = CluNum+1;
+        q = q+1;
+        if (Quitflag == 1)
+          break; 
+        end
+    end
+    FirstTimeFlag = 0; 
+end
+    New_Seqs = FHSeqs;
+ 
+% 
+% for j = 1:ClusterNumbers
+%    %amplifier = 1 + 9*(j-1);
+%    if (mod(j,2) ~= 0)
+%       p = mod(j,2); 
+%    else
+%        p = mod(j,2) + 2;
+%    end
+%     amplifier = 1;
+%     MaskValue = 0.7;
+%     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,p,amplifier,MaskValue);
 % end
 % 
 % %for more than 2 patterns 
-% for k = 1:(2-1)
+% for k = 1:ClusterNumbers-1
 %     Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
 % end
 % Seqs = Seqs1{k+1};
+
+
+% for i = 1:length(Seqs)
+%    Seqs(i).Group(1) = 2;
+%     Seqs(i).Group(6) = 2;
+%      Seqs(i).Group(8) = 2;
+%       Seqs(i).Group(120) = 1;
+%        Seqs(i).Group(130) = 1;
+% end
+% 
+% NewSeqs  = BreakSeqs(Seqs);
+
 % batchsize = 50;
 % NewSeqs = BatchSizingData(Seqs,batchsize);
 
 % Group = 2;
-% for k = 1:Group
-%     [Seqs{k},para] = GenerateSingleGroupData(options,D,k);
-%     % Visualize all impact functions and infectivity matrix
-%     %first test: only exsit two patterns.
-%     A{k} = ImpactFunc( para, options );
+% for k = 1:4
+    %[Seqs{k},para] = GenerateSingleGroupData(options,D,k);
+    % Visualize all impact functions and infectivity matrix
+    %first test: only exsit two patterns.
+%     A{k} = ImpactFunc( paraDataGenrating{k}, options );
 % end
 % 
 % figure
-% subplot(121)        
+% subplot(221)        
 % imagesc(A{1})
 % title('Ground truth of infectivity G1')
 % axis square
 % colorbar
 % 
-% subplot(122)        
+% subplot(222)        
 % imagesc(A{2})
 % title('Ground truth of infectivity G2')
 % axis square
 % colorbar
 % 
+% subplot(223)        
+% imagesc(A{3})
+% title('Ground truth of infectivity G2')
+% axis square
+% colorbar
+% 
+% subplot(224)        
+% imagesc(A{4})
+% title('Ground truth of infectivity G2')
+% axis square
+% colorbar
+% % 
 % Seqs = LinkingTwoSeqsToOne(Seqs{1},Seqs{2});
 % 
 % 
@@ -186,24 +337,24 @@ clear;
 %     axis square
 % 
 % end
-Num = 1;
-SumLoss = 2;
-
-    figure
-while(1)
-    Num = [Num; Num+1];
-    SumLoss = [SumLoss; SumLoss+1];
-
-
-    
-    plot(Num, SumLoss, 'bs-');
-    axis tight
-    axis square
-    ylabel('SumLoss');
-    xlabel('Num');
-    hold on
-    drawnow
-    
-    Num  = Num+1;
-    SumLoss = SumLoss + 1;
-end
+% Num = 1;
+% SumLoss = 2;
+% 
+%     figure
+% while(1)
+%     Num = [Num; Num+1];
+%     SumLoss = [SumLoss; SumLoss+1];
+% 
+% 
+%     
+%     plot(Num, SumLoss, 'bs-');
+%     axis tight
+%     axis square
+%     ylabel('SumLoss');
+%     xlabel('Num');
+%     hold on
+%     drawnow
+%     
+%     Num  = Num+1;
+%     SumLoss = SumLoss + 1;
+% end

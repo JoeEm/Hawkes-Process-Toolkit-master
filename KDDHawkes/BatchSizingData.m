@@ -1,16 +1,16 @@
 %BatchSizingData by 'event'
-function NewSeqs = BatchSizingData(Seqs,batchsize)
+function [NewSeqs,DSeqs] = BatchSizingData(Seqs,batchsize)
 
 NewSeqs = cell(1,size(Seqs,2));
 %find the Seqs with the least 'event' Numbers.
-% minIndex = 1;
-% minEventLength = length(Seqs(minIndex).Mark);
-% for i = 1:size(Seqs,2)
-%     if ( length(Seqs(i).Mark) < minEventLength)
-%         minIndex = i;
-%         minEventLength = length(Seqs(minIndex).Mark);
-%     end
-% end
+minIndex = 1;
+minEventLength = length(Seqs(minIndex).Mark);
+for i = 1:size(Seqs,2)
+    if ( length(Seqs(i).Mark) < minEventLength)
+        minIndex = i;
+        minEventLength = length(Seqs(minIndex).Mark);
+    end
+end
 
 for j = 1:size(Seqs,2)
     k =1;
@@ -21,8 +21,8 @@ for j = 1:size(Seqs,2)
       'Stop', [], ...
       'ClusterNum', [],...
       'Number',[]); %add Number label
-%     while(k + batchsize - 1 <= minEventLength)
-    while(k + batchsize - 1 <= length(Seqs(j).Mark))
+    while(k + batchsize - 1 <= minEventLength)
+    %while(k + batchsize - 1 <= length(Seqs(j).Mark))
         BackupTemp(k).Time = Seqs(j).Time(k:(k + batchsize - 1));
         BackupTemp(k).Mark = Seqs(j).Mark(k:(k + batchsize - 1));
         BackupTemp(k).Start = min(BackupTemp(k).Time);
@@ -32,6 +32,26 @@ for j = 1:size(Seqs,2)
         k = k + 1;
     end
     NewSeqs{j} = BackupTemp;
-end
     
+                BackupTemp1 = struct('Time', [], ...
+      'Mark', [], ...
+      'Start', [], ...
+      'Stop', [], ...
+      'Feature', [],...
+      'Group',[]); %add Number label
+    %generating New DataSeqs
+    for q = 1:minEventLength
+
+  
+        BackupTemp1.Time(q) = Seqs(j).Time(q);
+        BackupTemp1.Mark(q) = Seqs(j).Mark(q);
+        BackupTemp1.Group(q) = Seqs(j).Group(q);  
+        
+    end
+    BackupTemp1.Start = min(BackupTemp1.Time);
+    BackupTemp1.Stop = max(BackupTemp1.Time);
+    
+    DSeqs(j) = BackupTemp1;
+end
+
 end

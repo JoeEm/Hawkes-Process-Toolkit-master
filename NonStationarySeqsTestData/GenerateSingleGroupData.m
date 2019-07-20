@@ -1,7 +1,7 @@
 %In the another half of the Seqs, it generates data
 %corresponding to a different structure pattern.
 
-function [Seqs1,para] = GenerateSingleGroupData(options,D,Group,amplifier)
+function [Seqs1,para] = GenerateSingleGroupData(options,D,Group,amplifier,MaskValue, A, flag)
 
 
 %for Tmax 1 = 1honr, 1 week = 24*7 = 168, 
@@ -9,28 +9,34 @@ function [Seqs1,para] = GenerateSingleGroupData(options,D,Group,amplifier)
 disp('Approximate simulation of Hawkes processes via branching process')
 disp('Complicated gaussian kernel')
 para.kernel = 'gauss'; % the type of kernels per impact function
-para.w = 2; % the bandwidth of gaussian kernel
+para.w = 0.2; % the bandwidth of gaussian kernel
 para.landmark = 0:4:12; % the central locations of kernels
 L = length(para.landmark);
-
-% initialize ground truth parameters
 para.mu = rand(D,1)/D;
-para.A = zeros(D, D, L);
-for l = 1:L
-    para.A(:,:,l) = (0.5^l)*(0.5+ones(D));
-end
-mask = rand(D).*double(rand(D)>0.7);
-para.A = para.A.*repmat(mask, [1,1,L]);
-para.A = 0.25*para.A./max(abs(eig(sum(para.A,3)))); % ensure the stationarity of Hawkes process
-tmp = para.A;
-para.A = reshape(para.A, [D, L, D]);
-for di = 1:D
-    for dj = 1:D
-        phi = tmp(di, dj, :);
-        para.A(dj, :, di) = phi(:);
-    end
-end
 
+if (flag ~= 1)
+% initialize ground truth parameters
+    para.A = zeros(D, D, L);
+    for l = 1:L
+        para.A(:,:,l) = (0.5^l)*(0.5+ones(D));
+    end
+
+
+    mask = rand(D).*double(rand(D)>MaskValue);
+    % mask = rand(D).*double(rand(D)>0.7);
+    para.A = para.A.*repmat(mask, [1,1,L]);
+    para.A = 0.25*para.A./max(abs(eig(sum(para.A,3)))); % ensure the stationarity of Hawkes process
+    tmp = para.A;
+    para.A = reshape(para.A, [D, L, D]);
+    for di = 1:D
+        for dj = 1:D
+            phi = tmp(di, dj, :);
+            para.A(dj, :, di) = phi(:);
+        end
+    end
+else
+    para.A = A;
+end
 para.A = para.A * amplifier;
 
 

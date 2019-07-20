@@ -1,4 +1,4 @@
-clear;
+clear
 
 options.N = 500; % the number of sequences
 options.Nmax = 500; % the maximum number of events per sequence

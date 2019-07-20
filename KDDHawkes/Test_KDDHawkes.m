@@ -6,13 +6,13 @@ clear %clear workplace
 
 %generating simulation data.
 %'options' structure.
-options.N = 200; % the number of sequences
+options.N = 500; % the number of sequences
 options.Nmax = 500; % the maximum number of events per sequence
-options.Tmax = 500; % the maximum size of time window
+options.Tmax = 200; % the maximum size of time window
 options.tstep = 0.1;
 options.dt = 0.1; % the length of each time step
 options.M = 250; % the number of steps in the time interval for computing sup-intensity
-options.GenerationNum = 1000; % the number of generations for branch processing
+options.GenerationNum = 100; % the number of generations for branch processing
 D = 4; % the dimension of Hawkes processes
 
 
@@ -34,20 +34,44 @@ alg1.Ap = 1000;%for Pairwise similarity R.
 para = alg1;
 
 %hyperparameter
-ClusterNumbers = 3;
-Beta = 15000;
+
+Beta = 100;
 IterationNum = 1;
 FirstTimeLossFlag = 1;
-
-TotalIterationNum = 20;
+% 
+TotalIterationNum = 1000;
 %modelStorage = cell(TotalIterationNum,1);
 %Loss = zeros(TotalIterationNum,1);
 
 %GenratingSimulationData
+
+% MaskValue(1)=0.7;
+% MaskValue(2)=0.7;
+% amplifier(1) = 1;
+% amplifier(2) = 4;
+ClusterNumbers = 5;
+A1 = 0;
+flag = 0;
 for j = 1:ClusterNumbers
    %amplifier = 1 + 9*(j-1);
     amplifier = 1;
-    [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier);
+    MaskValue = 0.7;
+    if (j == 3)
+       A1 = paraDataGenrating{1}.A;
+       flag = 1;
+       group = 1;
+       [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag);
+    end
+    if (j == 4 || j == 5)
+       A1 = paraDataGenrating{2}.A;
+       flag = 1;
+       group = 2;
+       [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag);  
+    end
+    if (j == 1 || j ==2)
+        [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier,MaskValue,A1, flag);
+    end
+    flag = 0;
 end
 
 %for more than 2 patterns 
@@ -55,23 +79,25 @@ for k = 1:(ClusterNumbers-1)
     Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
 end
 Seqs = Seqs1{k+1};
-% load Seqs3DifClu.mat
+%load Seqs3DifClu.mat
 
 
-batchsize = 25; %parameter set mannually.
-NewSeqs = BatchSizingData(Seqs,batchsize);
+batchsize = 20; %parameter set mannually.
+[NewSeqs,Data] = BatchSizingData(Seqs,batchsize);
+TmpData{1} =Data;aa
 
 figure
 
+ClusterNumbers = 2;
 for IterationNum = 1:(TotalIterationNum-1)
     %Clustering Data
     fprintf('clustering Data\n');
-    [NewSeqs,PointsLoss, location, FinalPath] = FasterAssginPtsToCluster(Seqs, NewSeqs, ClusterNumbers, para, IterationNum, Beta);
+    [NewSeqs,PointsLoss, location, FinalPath,Data] = FasterAssginPtsToCluster(Data, NewSeqs, ClusterNumbers, para, IterationNum, Beta,batchsize);
  
     %Comuputing the Loss
     fprintf('computing the Loss \n');
-    SumLoss = Loss(PointsLoss, Beta, FinalPath);
-    
+    SumLoss(IterationNum) = Loss(PointsLoss, Beta, FinalPath);
+    TmpData{IterationNum+1} =Data;
     %Visualization the Loss (and Graph)
     %Num = 1:1:TotalIterationNum-1;
     Num = 1:1:IterationNum;
@@ -85,26 +111,3 @@ for IterationNum = 1:(TotalIterationNum-1)
    % hold off
     drawnow
 end
-
-%Visualization the Loss (and Graph)
-%Num = 1:1:TotalIterationNum-1;
-Num = 1:1:9;
-figure
-
-hold on
-plot(Num, Loss, 'bs-');
-axis tight
-axis square
-ylabel('Loss');
-xlabel('Iteration');
-hold off
-
-figure
-
-hold on
-plot(Num, b, 'bs-');
-axis tight
-axis square
-ylabel('Loglike of Part-2');
-xlabel('Iteration');
-hold off
