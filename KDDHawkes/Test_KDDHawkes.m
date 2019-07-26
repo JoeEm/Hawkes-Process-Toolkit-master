@@ -8,7 +8,7 @@ clear %clear workplace
 %'options' structure.
 options.N = 500; % the number of sequences
 options.Nmax = 500; % the maximum number of events per sequence
-options.Tmax = 200; % the maximum size of time window
+options.Tmax = 500; % the maximum size of time window
 options.tstep = 0.1;
 options.dt = 0.1; % the length of each time step
 options.M = 250; % the number of steps in the time interval for computing sup-intensity
@@ -35,7 +35,7 @@ para = alg1;
 
 %hyperparameter
 
-Beta = 100;
+Beta = 1500;
 IterationNum = 1;
 FirstTimeLossFlag = 1;
 % 
@@ -49,42 +49,56 @@ TotalIterationNum = 1000;
 % MaskValue(2)=0.7;
 % amplifier(1) = 1;
 % amplifier(2) = 4;
-ClusterNumbers = 5;
+% ClusterNumbers = 4;
 A1 = 0;
 flag = 0;
+ClusterNumbers = 4;
 for j = 1:ClusterNumbers
    %amplifier = 1 + 9*(j-1);
     amplifier = 1;
     MaskValue = 0.7;
     if (j == 3)
+       %A1 = paraDataGenrating{3}.A;
        A1 = paraDataGenrating{1}.A;
        flag = 1;
        group = 1;
        [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag);
+       Seqs2{j} = TailoringData(Seqs1{j});
     end
-    if (j == 4 || j == 5)
+    if (j == 4 )
        A1 = paraDataGenrating{2}.A;
        flag = 1;
        group = 2;
-       [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag);  
+       [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag); 
+       Seqs2{j} = TailoringData(Seqs1{j});
     end
     if (j == 1 || j ==2)
+    %if (j == 1 || j ==2 || j == 3)
         [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier,MaskValue,A1, flag);
+        Seqs2{j} = TailoringData(Seqs1{j});
     end
     flag = 0;
 end
 
 %for more than 2 patterns 
 for k = 1:(ClusterNumbers-1)
-    Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
+    Seqs2{k+1} = LinkingTwoSeqsToOne(Seqs2{k},Seqs2{k+1});
 end
-Seqs = Seqs1{k+1};
-%load Seqs3DifClu.mat
-
+% Seqs = Seqs1{k+1};
+% load Seqs3DifClu.mat
+% load 3DifCluData29Iteration.mat
+% load OriginalData_ABC4Dimen3000Seqs.mat
+% load OriginalData_ABAB4Dimen1200Seqs.mat
+% TmpData{1} = Data;
+% Data = [];
+% Seqs1 = TmpData{1};
+% for k = 1:length(TmpData)
+%    TmpData{k} = [];
+% end
 
 batchsize = 20; %parameter set mannually.
-[NewSeqs,Data] = BatchSizingData(Seqs,batchsize);
-TmpData{1} =Data;aa
+[NewSeqs,Data] = BatchSizingData(Seqs2{k+1} ,batchsize);
+TmpData{1} =Data;
 
 figure
 
@@ -97,7 +111,7 @@ for IterationNum = 1:(TotalIterationNum-1)
     %Comuputing the Loss
     fprintf('computing the Loss \n');
     SumLoss(IterationNum) = Loss(PointsLoss, Beta, FinalPath);
-    TmpData{IterationNum+1} =Data;
+    TmpData{IterationNum + 1} = Data;
     %Visualization the Loss (and Graph)
     %Num = 1:1:TotalIterationNum-1;
     Num = 1:1:IterationNum;

@@ -1,15 +1,15 @@
 clear;
 % 
-options.N = 500; % the number of sequences
-options.Nmax = 500; % the maximum number of events per sequence
-options.Tmax = 200; % the maximum size of time window
-options.tstep = 0.1;
-options.dt = 0.1; % the length of each time step
-options.M = 250; % the number of steps in the time interval for computing sup-intensity
-options.GenerationNum = 100; % the number of generations for branch processing
-D = 4; % the dimension of Hawkes processes
-
-ClusterNumbers = 4;
+% options.N = 1000; % the number of sequences
+% options.Nmax = 500; % the maximum number of events per sequence
+% options.Tmax = 200; % the maximum size of time window
+% options.tstep = 0.1;
+% options.dt = 0.1; % the length of each time step
+% options.M = 250; % the number of steps in the time interval for computing sup-intensity
+% options.GenerationNum = 100; % the number of generations for branch processing
+% D = 4; % the dimension of Hawkes processes
+% 
+% ClusterNumbers = 4;
 % A1 = 0;
 % flag = 0;
 % for j = 1:ClusterNumbers
@@ -27,107 +27,119 @@ ClusterNumbers = 4;
 %     [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier,MaskValue,A1, flag);
 %     flag = 0;
 % end
-load 1212Seqs720.mat
-InputSeqs = Data;
+% load 1212Seqs720.mat
+% InputSeqs = Data;
 %Seqs = BreakSeqs(InputSeqs);
  %[NewSeqs,DSeqs] = BatchSizingData(Seqs,20);
 
-FirstTimeFlag = 1;
+%Test the Data-generating by KDD*.m
+clear
 
+options.N = 1200; % the number of sequences
+options.Nmax = 500; % the maximum number of events per sequence
+options.Tmax = 200; % the maximum size of time window
+options.tstep = 0.1;
+options.dt = 0.1; % the length of each time step
+options.M = 250; % the number of steps in the time interval for computing sup-intensity
+options.GenerationNum = 200; % the number of generations for branch processing
+D = 4; % the dimension of Hawkes processes
 
-for k = 1:size(InputSeqs,2)
-    CluNum = 1;
-    Quitflag = 0;
-    q=1;
-    while (q <= (length(InputSeqs(k).Time)-1) )
-        
-      NewSeqs1{CluNum}= struct(   'Time', [], ...
-                                  'Mark',    [], ...
-                                  'Start',   [], ...
-                                  'Stop',    [], ...
-                                  'Feature', [], ...
-                                  'SeqsCluNum', [], ...
-                                  'Group', []);
-  
-       setStartpiontFlag = 1;
-       setlengthSeqsFlag = 1;
-       StartofaSeqsFlag = 1;
-       if ( (InputSeqs(k).Group(q) ~= InputSeqs(k).Group(q+1)) && StartofaSeqsFlag == 1)
-           startpoint = q;
-           lengthofSeqs = 1;
-           q = q+1;
-           StartofaSeqsFlag = 0;
-       else
-           while (InputSeqs(k).Group(q) == InputSeqs(k).Group(q+1) || lengthofSeqs ==0)                  
-               if (setlengthSeqsFlag == 1) 
-                    lengthofSeqs = 1;
-                    setlengthSeqsFlag = 0;
-               end
-               if (lengthofSeqs >= 1 )
-                    LengthExistFlag = 0;
-               end
-               lengthofSeqs=lengthofSeqs+1;      
-               q = q+1;
-               if (q > (length(InputSeqs(k).Time)-1) )
-                   Quitflag = 1;
-                   break; 
-               end
-               if (setStartpiontFlag == 1) 
-                   startpoint = q;
-                   setStartpiontFlag = 0;
-               end
-           end
-        end
-%        if (LengthExistFlag == 1)
-%            lengthofSeqs = 1;
-%        end
-       if (StartofaSeqsFlag ~= 0)
-            lengthofSeqs = lengthofSeqs - 1;
-       end
+alg1.LowRank = 0; % without low-rank regularizer
+alg1.Sparse = 1; % with sparse regularizer
+alg1.alphaS = 10; %MLE-S
+alg1.GroupSparse = 1; % with group-sparse regularizer
+alg1.alphaGS = 100; %MLE-SGL
+alg1.outer = 5;%5
+alg1.rho = 0.1; % the initial parameter for ADMM
+alg1.inner = 8;%8
+alg1.thres = 1e-5;
+alg1.Tmax = [];
+alg1.storeErr = 0;
+alg1.storeLL = 0;
+alg1.As = 10; %for Local Independence R.
+alg1.Ap = 1000;%for Pairwise similarity R.
 
+para = alg1;
 
-        counter = 1;
-        for i = startpoint:( startpoint + lengthofSeqs - 1)
-            NewSeqs1{CluNum}.Time(counter) = InputSeqs(k).Time(i);
-            NewSeqs1{CluNum}.Mark(counter) = InputSeqs(k).Mark(i);
-            NewSeqs1{CluNum}.Group(counter) = InputSeqs(k).Group(i);
-            counter = counter + 1;
-        end
-            NewSeqs1{CluNum}.Start = min(NewSeqs1{CluNum}.Time);
-            NewSeqs1{CluNum}.Stop =  max(NewSeqs1{CluNum}.Time);
-            NewSeqs1{CluNum}.SeqsCluNum =  InputSeqs(k).Group(startpoint);
+% load OriginalA_ABAB4Dimen1200Seqs.mat
+%  A1 = ImpactFunc(originalA{1}, options);
+%  A2 = ImpactFunc(originalA{2}, options);
+%  
+% subplot(121)        
+% imagesc(A1)
+% title('Ground truth of infectivity Pattern A')
+% axis square
+% colorbar
+% 
+% subplot(122)        
+% imagesc(A2)
+% title('Ground truth of infectivity Pattern B')
+% axis square
+% colorbar
+load OriginalData_ABAB4Dimen1200Seqs.mat
+Data1{1} = Data;
+% originalData = TmpData{1};
+% minLossData = TmpData{7};
+% normalData = TmpData{2};
 
-        if (FirstTimeFlag == 1)
-               
-            FHSeqs{CluNum}= struct(     'Time',    [], ...
-                          'Mark',    [], ...
-                          'Start',   [], ...
-                          'Stop',    [], ...
-                          'Feature', [], ...
-                          'SeqsCluNum', [], ...
-                          'Group', []);    
+% Data{1} = Seqs;
+%Data{2} = minLossData;
+%Data{3} = normalData;
 
+ClusterNumbers = 2;
+alg1.Sparse=1;
+alg1.GroupSparse=1; 
+% 
+% 
+for k = 1:length(Data1)
+    k
+    NewSeqs = BreakSeqs(Data1{k});%break down into two seqs.
 
-            for a = 1:length(NewSeqs1{CluNum}.Time)
-                FHSeqs{CluNum}(k).Time(a) = NewSeqs1{CluNum}.Time(a);
-                FHSeqs{CluNum}(k).Mark(a) = NewSeqs1{CluNum}.Mark(a);
-                FHSeqs{CluNum}(k).Group(a) = NewSeqs1{CluNum}.Group(a);
+    %pick out the longest Seqs for corresponding CluNums
+    index = cell(ClusterNumbers,1);
+    for i = 1:ClusterNumbers
+        for j = 1:length(NewSeqs)
+            if(i == NewSeqs{j}(1).SeqsCluNum)
+              index{i} = [index{i}; j];  
             end
-                FHSeqs{CluNum}(k).Start = min(FHSeqs{CluNum}(k).Time);
-                FHSeqs{CluNum}(k).Stop =  max(FHSeqs{CluNum}(k).Time);
-                FHSeqs{CluNum}(k).SeqsCluNum = NewSeqs1{CluNum}.Group(1);
-        else
-            FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
-        end
-        CluNum = CluNum+1;
-        q = q+1;
-        if (Quitflag == 1)
-          break; 
         end
     end
-    FirstTimeFlag = 0; 
+    figure
+    p = 131;
+    for i = 1:ClusterNumbers
+       maxIndex = index{i}(1);
+       for j = 1:length(index{i})
+           if ( length(NewSeqs{index{i}(j)}(1).Mark) > length(NewSeqs{maxIndex}(1).Mark))
+                maxIndex = index{i}(j);
+           end
+       end
+       ClusterData{i} = NewSeqs{maxIndex};
+       
+       model = Initialization_Basis(ClusterData{i});
+       model_MLE_SGL = Learning_MLE_S_Basis( ClusterData{i}, model, alg1 );
+       A = ImpactFunc(model_MLE_SGL, options);
+       
+       hold on
+       subplot(p)        
+       imagesc(A)
+       if (k == 1)      
+        title('original Data') 
+       end
+       if (k == 2)      
+        title('minLoss Data') 
+       end
+       if (k == 3)      
+        title('normalIteration Data') 
+       end
+       axis square
+       colorbar
+       drawnow
+       p = p+1;
+    end
+
+    
 end
-    New_Seqs = FHSeqs;
+
  
 % 
 % for j = 1:ClusterNumbers

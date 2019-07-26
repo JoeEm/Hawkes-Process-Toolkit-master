@@ -126,15 +126,23 @@ else
               index{i} = [index{i}; j];  
             end
         end
-    end
+    end  
+
+%     for i = 1:ClusterNumbers
+%        maxIndex = index{i}(1);
+%        for j = 1:length(index{i})
+%            if ( length(NewSeqs{index{i}(j)}(1).Mark) > length(NewSeqs{maxIndex}(1).Mark))
+%                 maxIndex = index{i}(j);
+%            end
+%        end
+%        ClusterData{i} = NewSeqs{maxIndex};
+%     end
+    TmpNewSeqs = NewSeqs;
     for i = 1:ClusterNumbers
-       maxIndex = index{i}(1);
-       for j = 1:length(index{i})
-           if ( length(NewSeqs{index{i}(j)}(1).Mark) > length(NewSeqs{maxIndex}(1).Mark))
-                maxIndex = index{i}(j);
-           end
+       for j = 1:(length(index{i})-1)
+            TmpNewSeqs{index{i}(j+1)} = KDDLinkingTwoSeqsToOne(TmpNewSeqs{index{i}(j)}, TmpNewSeqs{index{i}(j+1)}); 
        end
-       ClusterData{i} = NewSeqs{maxIndex};
+       ClusterData{i} = TmpNewSeqs{index{i}(j+1)};
     end
     
     %learning the corresponding model
@@ -167,8 +175,8 @@ Loss = CurrCost;
 % CurrCost = zeros(1,ClusterNumbers);
 % PrevPath = cell(1,ClusterNumbers);
 % CurrPath = cell(1,ClusterNumbers);
-%tmp = zeros(ClusterNumbers,length(NewData{1}));
-
+% tmp = zeros(ClusterNumbers,length(NewData{1}));
+% 
 % for i = 1:length(NewData{1})
 %     for K = 1:ClusterNumbers
 %         MinIndex = find(PrevCost == min(PrevCost));
@@ -185,15 +193,15 @@ Loss = CurrCost;
 %             CurrCost(K) = PrevCost(K) - Loglike + Beta;
 %             CurrPath{K} = [PrevPath{K}; MinIndex];
 %         end
-%     PrevCost = CurrCost;   
+%     PrevCost = CurrCost;
 %     end
-%     PrevPath = CurrPath; 
+%     PrevPath = CurrPath;
 % end
 % 
-
+% 
 % FinalMinIndex = find(CurrCost == min(CurrCost));
 % FinalPath = CurrPath{FinalMinIndex};
-%Loss = CurrCost(FinalMinIndex);
+% Loss = CurrCost(FinalMinIndex);
 
 %Rearrange the NewData.
 for i = 1:1
