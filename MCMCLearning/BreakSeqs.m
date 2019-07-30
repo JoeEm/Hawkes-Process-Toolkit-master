@@ -84,7 +84,17 @@ for k = 1:size(InputSeqs,2)
                 FHSeqs{CluNum}(k).Stop =  max(FHSeqs{CluNum}(k).Time);
                 FHSeqs{CluNum}(k).SeqsCluNum = NewSeqs1{CluNum}.Group(1);
         else
-            FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
+            if (CluNum > length( FHSeqs))
+                for p  = 1:length(NewSeqs1{CluNum})
+                    for o = 1:length(NewSeqs1{CluNum}(p).Time)
+                        NewSeqs1{CluNum}(p).Group(o) =  FHSeqs{CluNum -1}(1).Group(1);
+                    end
+                end
+                CluNum = CluNum - 1;               
+                FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
+            else   
+                FHSeqs{CluNum} = [FHSeqs{CluNum},NewSeqs1{CluNum}];
+            end
         end
         CluNum = CluNum+1;
         q = q+1;

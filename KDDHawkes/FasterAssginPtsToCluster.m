@@ -6,7 +6,7 @@ ClusterData = cell(ClusterNumbers,1);
 if (IterationNum == 1) %Initialization
    %computing the timeLocation for originalData
    for i = 1:ClusterNumbers - 1
-       location(i) = i/3;
+       location(i) = i/4;
        TimeLocation(i) =location(i) * max(Data(1).Time);
    end
    tmplocation = TimeLocation;
@@ -17,7 +17,7 @@ if (IterationNum == 1) %Initialization
     Q = 1;
         for K = 1:Timelength
             if (flag ~= 1)
-                if( K < (location(Q)*length(Data(I).Mark)))
+                if( Data(I).Time(K) < (location(Q)*Data(I).Stop))
                     Data(I).Group(K) = Q;                               
                 else
                     if (Q ~= ClusterNumbers - 1)
@@ -50,20 +50,20 @@ else
     for j = 1:(length(NewData{1})-1) 
         if (j == 1)
             tmplocation{currpos}(1) = NewData{1}(j).ClusterNum;
-            tmplocation{currpos}(2) = NewData{1}(j).Time(1+batchsize/2);
+            tmplocation{currpos}(2) = NewData{1}(j).Time(1) + batchsize/2;
             currpos = currpos + 1;
         end
         if (j + 1  == length(length(NewData{1})))
             currpos = currpos + 1;
             tmplocation{currpos}(1) = NewData{1}(j).ClusterNum;
-            tmplocation{currpos}(2) = NewData{1}(j).Time(1+batchsize/2);
+            tmplocation{currpos}(2) = NewData{1}(j).Time(1) + batchsize/2;
             continue;
         end
         if (NewData{1}(j).ClusterNum == NewData{1}(j+1).ClusterNum)
             continue;
         else
             tmplocation{currpos}(1) = NewData{1}(j+1).ClusterNum;
-            tmplocation{currpos}(2) = NewData{1}(j).Time(1+batchsize/2);
+            tmplocation{currpos}(2) = NewData{1}(j).Time(1) + batchsize/2;
             currpos = currpos + 1;
         end
     end
@@ -72,7 +72,7 @@ else
         counter = 1;
         innnerFlag = 0;
         for j = 2:loactionNum
-            while( counter < ((tmplocation{j}(2))/((Data(1).Stop-Data(1).Start))*length(Data(1).Mark)))
+            while( Data(I).Time(counter) < tmplocation{j}(2))
                 Data(I).Group(counter) = tmplocation{j-1}(1);
                 counter = counter + 1;
                 if (counter == length(Data(I).Time))
@@ -128,22 +128,22 @@ else
         end
     end  
 
-%     for i = 1:ClusterNumbers
-%        maxIndex = index{i}(1);
-%        for j = 1:length(index{i})
-%            if ( length(NewSeqs{index{i}(j)}(1).Mark) > length(NewSeqs{maxIndex}(1).Mark))
-%                 maxIndex = index{i}(j);
-%            end
-%        end
-%        ClusterData{i} = NewSeqs{maxIndex};
-%     end
-    TmpNewSeqs = NewSeqs;
     for i = 1:ClusterNumbers
-       for j = 1:(length(index{i})-1)
-            TmpNewSeqs{index{i}(j+1)} = KDDLinkingTwoSeqsToOne(TmpNewSeqs{index{i}(j)}, TmpNewSeqs{index{i}(j+1)}); 
+       maxIndex = index{i}(1);
+       for j = 1:length(index{i})
+           if ( length(NewSeqs{index{i}(j)}(1).Mark) > length(NewSeqs{maxIndex}(1).Mark))
+                maxIndex = index{i}(j);
+           end
        end
-       ClusterData{i} = TmpNewSeqs{index{i}(j+1)};
+       ClusterData{i} = NewSeqs{maxIndex};
     end
+%     TmpNewSeqs = NewSeqs;
+%     for i = 1:ClusterNumbers
+%        for j = 1:(length(index{i})-1)
+%             TmpNewSeqs{index{i}(j+1)} = KDDLinkingTwoSeqsToOne(TmpNewSeqs{index{i}(j)}, TmpNewSeqs{index{i}(j+1)}); 
+%        end
+%        ClusterData{i} = TmpNewSeqs{index{i}(j+1)};
+%     end
     
     %learning the corresponding model
     for i = 1:ClusterNumbers

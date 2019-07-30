@@ -12,8 +12,8 @@ options.Tmax = 500; % the maximum size of time window
 options.tstep = 0.1;
 options.dt = 0.1; % the length of each time step
 options.M = 250; % the number of steps in the time interval for computing sup-intensity
-options.GenerationNum = 100; % the number of generations for branch processing
-D = 4; % the dimension of Hawkes processes
+options.GenerationNum = 400; % the number of generations for branch processing
+D = 3; % the dimension of Hawkes processes
 
 
 alg1.LowRank = 0; % without low-rank regularizer
@@ -63,26 +63,26 @@ for j = 1:ClusterNumbers
        flag = 1;
        group = 1;
        [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag);
-       Seqs2{j} = TailoringData(Seqs1{j});
+       %Seqs2{j} = TailoringData(Seqs1{j});
     end
     if (j == 4 )
        A1 = paraDataGenrating{2}.A;
        flag = 1;
        group = 2;
        [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,group,amplifier,MaskValue,A1, flag); 
-       Seqs2{j} = TailoringData(Seqs1{j});
+       %Seqs2{j} = TailoringData(Seqs1{j});
     end
     if (j == 1 || j ==2)
     %if (j == 1 || j ==2 || j == 3)
         [Seqs1{j},paraDataGenrating{j}] = GenerateSingleGroupData(options,D,j,amplifier,MaskValue,A1, flag);
-        Seqs2{j} = TailoringData(Seqs1{j});
+        %Seqs2{j} = TailoringData(Seqs1{j});
     end
     flag = 0;
 end
 
 %for more than 2 patterns 
 for k = 1:(ClusterNumbers-1)
-    Seqs2{k+1} = LinkingTwoSeqsToOne(Seqs2{k},Seqs2{k+1});
+    Seqs1{k+1} = LinkingTwoSeqsToOne(Seqs1{k},Seqs1{k+1});
 end
 % Seqs = Seqs1{k+1};
 % load Seqs3DifClu.mat
@@ -96,8 +96,8 @@ end
 %    TmpData{k} = [];
 % end
 
-batchsize = 20; %parameter set mannually.
-[NewSeqs,Data] = BatchSizingData(Seqs2{k+1} ,batchsize);
+batchsize = 50; %parameter set mannually.
+[NewSeqs,Data] = BatchSizingData(Seqs1{k+1} ,batchsize);
 TmpData{1} =Data;
 
 figure
